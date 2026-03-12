@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -72,15 +73,15 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .hist-q{font-family:'Cormorant Garamond',serif;font-size:12px;color:var(--muted);margin-top:4px;line-height:1.35;}
 .hist-del{background:none;border:none;color:var(--muted);cursor:pointer;padding:2px;transition:color .15s;flex-shrink:0;}
 .hist-del:hover{color:var(--red);}
-.api-notice{background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--blue);border-radius:2px;padding:18px 20px;margin-bottom:24px;display:none;}
-.api-notice.show{display:block;}
-.an-title{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--blue);text-transform:uppercase;margin-bottom:8px;}
-.an-body{font-size:12px;color:var(--muted2);line-height:1.65;}
-.an-row{display:flex;gap:8px;margin-top:12px;}
-.an-inp{flex:1;background:var(--surface3);border:1px solid var(--border);border-radius:2px;padding:8px 12px;color:var(--text);font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:.06em;outline:none;transition:border-color .2s;}
-.an-inp:focus{border-color:var(--blue);}
-.an-btn{background:none;border:1px solid var(--blue);border-radius:2px;padding:8px 16px;color:var(--blue);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;transition:all .2s;white-space:nowrap;}
-.an-btn:hover{background:rgba(106,154,170,.1);}
+
+
+
+
+
+
+
+
+
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(24px);background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);padding:10px 22px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:400;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
@@ -102,11 +103,6 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   </div>
 </div>
 
-  <div class="an-body">Este widget llama a Claude directamente para generar una frase y una pregunta nueva cada día. Tu API key se guarda solo en tu navegador (localStorage), nunca sale del dispositivo. Podés obtenerla en <strong>console.anthropic.com</strong>.</div>
-  <div class="an-row">
-    <input class="an-inp" id="apiKeyInput" type="password" placeholder="sk-ant-api03-...">
-    <button class="an-btn" onclick="saveKey()">Guardar</button>
-  </div>
 </div>
 
 <div class="feed-grid">
