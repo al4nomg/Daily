@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inspiration Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0e0b08;--surface:#181310;--surface2:#201a12;--surface3:#282218;
+  --border:#2e2318;--border2:#3e3228;
+  --text:#f0e8dc;--text2:#d4c8b8;--muted:#6a5a48;--muted2:#9a8a78;
+  --accent:#c4904f;--accent2:#e0b47a;--green:#7aaa88;--purple:#9a7aaa;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;min-height:100vh;padding:32px 20px 60px;position:relative;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:200;}
+.orb{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;}
+.o1{width:500px;height:500px;background:radial-gradient(circle,#c4904f,transparent);top:-150px;right:-120px;opacity:.07;animation:o1 18s ease-in-out infinite;}
+.o2{width:280px;height:280px;background:radial-gradient(circle,#9a7aaa,transparent);bottom:-60px;left:-60px;opacity:.05;animation:o2 22s ease-in-out infinite;}
+@keyframes o1{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,30px)}}
+@keyframes o2{0%,100%{transform:translate(0,0)}50%{transform:translate(25px,-30px)}}
+.app{max-width:920px;margin:0 auto;position:relative;z-index:1;animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);position:relative;}
+.header::after{content:'';position:absolute;bottom:-1px;left:0;height:1px;width:0;background:linear-gradient(to right,var(--accent),var(--accent2) 40%,transparent 70%);animation:lineGrow 1s .2s forwards;}
+@keyframes lineGrow{to{width:55%}}
+.title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--text);text-shadow:0 0 40px rgba(196,144,79,.2);}
+.subtitle{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.28em;color:var(--muted2);text-transform:uppercase;margin-top:3px;}
+.hdr-right{display:flex;gap:8px;}
+
+/* DAILY BANNER */
+.daily-strip{background:var(--surface);border:1px solid var(--border2);border-left:3px solid var(--accent2);border-radius:2px;padding:14px 18px;margin-bottom:20px;display:flex;align-items:flex-start;gap:14px;position:relative;overflow:hidden;}
+.daily-strip::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(to right,var(--accent),transparent);}
+.ds-col{display:flex;flex-direction:column;flex:1;gap:2px;}
+.ds-label{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.28em;color:var(--accent2);text-transform:uppercase;margin-bottom:6px;display:flex;align-items:center;gap:8px;}
+.ds-label::after{content:'';flex:1;height:1px;background:linear-gradient(to right,var(--border2),transparent);}
+.ds-text{font-family:'Cormorant Garamond',serif;font-size:17px;font-style:italic;color:var(--text2);line-height:1.45;letter-spacing:.02em;flex:1;}
+.ds-author{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;color:var(--muted);margin-top:6px;text-transform:uppercase;}
+.ds-add-btn{background:none;border:1px solid rgba(196,144,79,.3);border-radius:2px;padding:6px 12px;color:var(--muted2);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.15em;text-transform:uppercase;transition:all .2s;white-space:nowrap;align-self:center;flex-shrink:0;}
+.ds-add-btn:hover{border-color:var(--accent);color:var(--accent2);}
+
+/* FILTER TABS */
+.cat-bar{display:flex;gap:8px;margin-bottom:20px;flex-wrap:wrap;}
+.cat-btn{background:none;border:1px solid var(--border);border-radius:2px;padding:7px 14px;color:var(--muted2);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.18em;text-transform:uppercase;transition:all .2s;}
+.cat-btn.active{border-color:var(--accent);color:var(--accent2);background:rgba(196,144,79,.05);}
+.cat-btn:hover:not(.active){color:var(--text);border-color:var(--border2);}
+.cat-btn .cc{font-size:7px;color:var(--muted);margin-left:5px;}
+
+/* MASONRY GRID */
+.masonry{columns:3;column-gap:12px;}
+@media(max-width:720px){.masonry{columns:2;}}
+
+/* ITEM CARD */
+.board-item{break-inside:avoid;margin-bottom:12px;position:relative;cursor:pointer;animation:itemIn .35s cubic-bezier(.16,1,.3,1) both;}
+@keyframes itemIn{from{opacity:0;transform:scale(.96) translateY(6px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.board-item:hover .item-overlay{opacity:1;}
+.board-item:hover .item-card{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 28px rgba(0,0,0,.4);}
+.item-card{background:var(--surface);border:1px solid var(--border);border-radius:2px;overflow:hidden;transition:all .22s;position:relative;}
+.item-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ic,var(--accent));opacity:.4;transition:opacity .2s;}
+.board-item:hover .item-card::before{opacity:.8;}
+
+/* QUOTE TYPE */
+.item-quote{padding:20px;position:relative;}
+.item-quote::after{content:'';position:absolute;bottom:6px;right:6px;width:8px;height:8px;border-bottom:1px solid var(--accent);border-right:1px solid var(--accent);opacity:.25;}
+.q-mark{font-family:'Cormorant Garamond',serif;font-size:60px;font-weight:600;color:var(--accent);opacity:.15;line-height:.7;margin-bottom:4px;position:absolute;top:10px;left:14px;}
+.q-text{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;font-style:italic;color:var(--text2);letter-spacing:.03em;line-height:1.6;position:relative;z-index:1;padding-top:12px;}
+.q-author{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--muted2);text-transform:uppercase;margin-top:10px;}
+.q-cats{display:flex;gap:4px;margin-top:8px;flex-wrap:wrap;}
+.q-cat{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.1em;padding:2px 6px;border-radius:1px;text-transform:uppercase;}
+
+/* IMAGE TYPE */
+.item-img img{width:100%;display:block;object-fit:cover;transition:transform .3s;}
+.board-item:hover .item-img img{transform:scale(1.02);}
+.item-img-caption{padding:10px 12px;}
+.img-title{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.03em;margin-bottom:3px;}
+.img-sub{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.12em;color:var(--muted2);}
+
+/* URL TYPE */
+.item-url{padding:16px;}
+.url-icon{font-size:24px;margin-bottom:8px;}
+.url-title{font-family:'Cormorant Garamond',serif;font-size:14px;font-weight:600;color:var(--text2);letter-spacing:.03em;margin-bottom:4px;}
+.url-link{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.1em;color:var(--accent2);text-decoration:none;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block;}
+.url-link:hover{text-decoration:underline;}
+.url-note{font-size:11px;color:var(--muted2);margin-top:6px;line-height:1.4;}
+
+/* ITEM OVERLAY */
+.item-overlay{position:absolute;inset:0;display:flex;align-items:flex-end;justify-content:flex-end;padding:8px;opacity:0;transition:opacity .2s;z-index:5;}
+.btn-del-item{background:rgba(10,8,6,.8);border:1px solid rgba(192,96,96,.4);border-radius:2px;padding:4px 8px;color:var(--red);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.12em;transition:all .18s;}
+.btn-del-item:hover{background:rgba(192,96,96,.2);}
+
+/* ADD MODAL */
+.overlay{position:fixed;inset:0;background:rgba(6,4,2,.9);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;}
+.overlay.open{display:flex;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{width:440px;background:var(--surface);border:1px solid var(--border2);padding:28px;position:relative;animation:modalIn .35s cubic-bezier(.16,1,.3,1);box-shadow:0 32px 80px rgba(0,0,0,.8);}
+.modal-bar{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--accent),var(--accent2),transparent);animation:barSlide .5s cubic-bezier(.16,1,.3,1);}
+@keyframes barSlide{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1)}}
+@keyframes modalIn{from{opacity:0;transform:translateY(-12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal::before{content:'';position:absolute;top:7px;left:7px;width:9px;height:9px;border-top:1px solid var(--accent);border-left:1px solid var(--accent);opacity:.4;}
+.modal::after{content:'';position:absolute;bottom:7px;right:7px;width:9px;height:9px;border-bottom:1px solid var(--accent);border-right:1px solid var(--accent);opacity:.4;}
+.m-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:18px;}
+.m-tabs{display:flex;gap:6px;margin-bottom:18px;}
+.m-tab{background:none;border:1px solid var(--border);border-radius:2px;padding:6px 12px;color:var(--muted2);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;transition:all .2s;}
+.m-tab.active{border-color:var(--accent);color:var(--accent2);}
+.m-field{margin-bottom:13px;}
+.m-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px;display:block;}
+.m-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:300;letter-spacing:.04em;outline:none;transition:border-color .2s;}
+.m-input:focus{border-color:var(--accent);}
+.m-input::placeholder{color:var(--muted);}
+.m-textarea{min-height:70px;resize:vertical;font-family:'Cormorant Garamond',serif;font-style:italic;}
+.m-btns{display:flex;gap:8px;margin-top:18px;}
+.btn-c{flex:1;background:none;border:1px solid var(--border);border-radius:2px;padding:9px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;font-size:9px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;transition:all .2s;}
+.btn-c:hover{border-color:var(--border2);color:var(--text);}
+.btn-s{flex:2;background:none;border:1px solid var(--accent);border-radius:2px;padding:9px;color:var(--accent2);cursor:pointer;font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;transition:all .22s;position:relative;overflow:hidden;}
+.btn-s::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateX(-101%);transition:transform .25s cubic-bezier(.16,1,.3,1);z-index:0;}
+.btn-s:hover::before{transform:translateX(0);}
+.btn-s:hover{color:#0e0b08;}
+.btn-s span{position:relative;z-index:1;}
+
+/* BTN */
+.btn-new{background:none;border:1px solid var(--accent);border-radius:2px;padding:9px 16px;color:var(--accent2);cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;transition:all .22s;position:relative;overflow:hidden;}
+.btn-new::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateX(-101%);transition:transform .25s cubic-bezier(.16,1,.3,1);z-index:0;}
+.btn-new:hover::before{transform:translateX(0);}
+.btn-new:hover{color:#0e0b08;}
+.btn-new span{position:relative;z-index:1;}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(24px);background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:400;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<div class="toast" id="toast"></div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay" onclick="closeOut(event)">
+<div class="modal">
+  <div class="modal-bar"></div>
+  <div class="m-title">Add to Board</div>
+  <div class="m-tabs" id="mTabs">
+    <button class="m-tab active" onclick="setMType('quote')">Quote</button>
+    <button class="m-tab" onclick="setMType('image')">Image</button>
+    <button class="m-tab" onclick="setMType('link')">Link</button>
+  </div>
+  <div id="mFields"></div>
+  <div class="m-field">
+    <label class="m-label">Category</label>
+    <input class="m-input" id="mCat" type="text" placeholder="e.g. philosophy, art, study..." maxlength="30">
+  </div>
+  <div class="m-btns">
+    <button class="btn-c" onclick="closeModal()">Cancel</button>
+    <button class="btn-s" onclick="saveItem()"><span>Add to Board</span></button>
+  </div>
+</div>
+</div>
+
+<div class="app">
+<div class="header">
+  <div>
+    <div class="title">Inspiration Board</div>
+    <div class="subtitle">quotes · images · references</div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn-new" onclick="openModal()"><span>+ Add</span></button>
+  </div>
+</div>
+
+<div class="daily-strip" id="dailyStrip">
+  <div class="ds-col">
+    <div class="ds-label">Frase del día</div>
+    <div class="ds-text" id="dsFraseText">—</div>
+    <div class="ds-author" id="dsFraseAuthor"></div>
+  </div>
+  <button class="ds-add-btn" onclick="addDailyToBoard()" id="dsAddBtn">+ Al board</button>
+</div>
+
+<div class="cat-bar" id="catBar"></div>
+<div class="masonry" id="board"></div>
+</div>
+
+<script>
+const $=id=>document.getElementById(id);
+const CAT_COLORS=['#c4904f','#e0b47a','#7aaa88','#6a9aaa','#9a7aaa','#b07878','#8aaa7a'];
+const pad=n=>String(n).padStart(2,'0');
+const doy=()=>Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/(1000*60*60*24));
+
+// ── DAILY FEED ────────────────────────────────────────────────────────────────
+let _todayQuote=null;
+function loadDailyFeed(){
+  const feed=JSON.parse(localStorage.getItem('daily-feed')||'null');
+  const d=doy();
+  if(feed?.quotes?.length){
+    const pool=[];
+    feed.quotes.forEach(q=>{pool.push(q);if(q.fav){pool.push(q);pool.push(q);}});
+    _todayQuote=pool[d%pool.length];
+    $('dsFraseText').textContent=`"${_todayQuote.text}"`;
+    $('dsFraseAuthor').textContent=_todayQuote.author?`— ${_todayQuote.author.toUpperCase()}`:'';
+  } else {
+    // fallback
+    const fallbacks=[
+      {text:'Per aspera ad astra — a través de la adversidad, hacia las estrellas.',author:'Proverbio Latino'},
+      {text:'Un lector vive mil vidas antes de morir.',author:'George R.R. Martin'},
+      {text:'Lo que sabemos es una gota; lo que ignoramos es un océano.',author:'Isaac Newton'},
+    ];
+    _todayQuote=fallbacks[d%fallbacks.length];
+    $('dsFraseText').textContent=`"${_todayQuote.text}"`;
+    $('dsFraseAuthor').textContent=_todayQuote.author?`— ${_todayQuote.author.toUpperCase()}`:'';
+  }
+}
+
+function addDailyToBoard(){
+  if(!_todayQuote) return;
+  // Check if already on board
+  if(items.some(i=>i.type==='quote'&&i.text===_todayQuote.text)){toast('Ya está en el board');return;}
+  items.unshift({id:'i'+Date.now(),type:'quote',text:_todayQuote.text,author:_todayQuote.author||'',cat:'libros',col:'#e0b47a'});
+  save();render();toast('Frase del día agregada ✦');
+}
+
+// When adding a quote, also sync to daily feed
+function syncQuoteToFeed(text,author){
+  const feed=JSON.parse(localStorage.getItem('daily-feed')||'null');
+  if(!feed) return; // feed not initialized yet
+  if(feed.quotes.some(q=>q.text===text)) return; // already there
+  feed.quotes.push({id:'q'+Date.now(),text,author,fav:false});
+  localStorage.setItem('daily-feed',JSON.stringify(feed));
+}
+
+let items=JSON.parse(localStorage.getItem('inspo-items2')||'null');
+if(!items){
+  items=[
+    {id:'1',type:'quote',text:'Cuanto más lees, más cosas sabrás. Cuanto más aprendas, más lejos llegarás.',author:'Dr. Seuss',cat:'estudio',col:'#c4904f'},
+    {id:'2',type:'quote',text:'Per aspera ad astra — a través de la adversidad, hacia las estrellas.',author:'Proverbio latino',cat:'filosofía',col:'#9a7aaa'},
+    {id:'3',type:'quote',text:'No hay nada más poderoso en el mundo que una idea cuyo tiempo ha llegado.',author:'Victor Hugo',cat:'filosofía',col:'#6a9aaa'},
+    {id:'4',type:'quote',text:'La educación es el arma más poderosa que puedes usar para cambiar el mundo.',author:'Nelson Mandela',cat:'estudio',col:'#7aaa88'},
+    {id:'5',type:'quote',text:'Un lector vive mil vidas antes de morir. El que nunca lee solo vive una.',author:'George R.R. Martin',cat:'libros',col:'#e0b47a'},
+    {id:'6',type:'quote',text:'La disciplina es el puente entre las metas y los logros.',author:'Jim Rohn',cat:'crecimiento',col:'#c4904f'},
+    {id:'7',type:'quote',text:'El conocimiento es poder, pero el carácter es más.',author:'Anónimo',cat:'filosofía',col:'#9a7aaa'},
+    {id:'8',type:'quote',text:'Sé el cambio que deseas ver en el mundo.',author:'Mahatma Gandhi',cat:'crecimiento',col:'#7aaa88'},
+    {id:'9',type:'quote',text:'In the library I felt better, words you could trust and look at till you understood them.',author:'Jeanette Winterson',cat:'libros',col:'#6a9aaa'},
+    {id:'10',type:'quote',text:'Simplicity is the ultimate sophistication.',author:'Leonardo da Vinci',cat:'arte',col:'#e0b47a'},
+    {id:'11',type:'quote',text:'Lo que sabemos es una gota; lo que ignoramos es un océano.',author:'Isaac Newton',cat:'filosofía',col:'#c4904f'},
+    {id:'12',type:'link',title:'Técnica Pomodoro',url:'https://es.wikipedia.org/wiki/T%C3%A9cnica_Pomodoro',note:'Bloques de 25 minutos de foco profundo',cat:'estudio',col:'#6a9aaa'},
+  ];
+  save();
+}
+
+let activeFilter='all', mType='quote';
+function save(){localStorage.setItem('inspo-items2',JSON.stringify(items));}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2000);}
+
+function getCats(){
+  const cats=[...new Set(items.map(i=>i.cat).filter(Boolean))];
+  return cats;
+}
+
+function render(){
+  renderCatBar();renderBoard();
+}
+
+function renderCatBar(){
+  const cats=getCats();
+  $('catBar').innerHTML=`<button class="cat-btn${activeFilter==='all'?' active':''}" onclick="setFilter('all')">All <span class="cc">${items.length}</span></button>`+
+    cats.map(c=>`<button class="cat-btn${activeFilter===c?' active':''}" onclick="setFilter('${c}')">${c} <span class="cc">${items.filter(i=>i.cat===c).length}</span></button>`).join('');
+}
+
+function setFilter(f){activeFilter=f;renderCatBar();renderBoard();}
+
+function renderBoard(){
+  const list=activeFilter==='all'?items:items.filter(i=>i.cat===activeFilter);
+  if(!list.length){$('board').innerHTML=`<div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--muted);padding:40px;text-align:center">This board awaits your inspiration</div>`;return;}
+  $('board').innerHTML=list.map((item,i)=>renderItem(item,i)).join('');
+}
+
+function renderItem(item,i){
+  const col=item.col||CAT_COLORS[0];
+  let inner='';
+  if(item.type==='quote'){
+    inner=`<div class="item-quote">
+      <div class="q-mark">"</div>
+      <div class="q-text">${item.text}</div>
+      ${item.author?`<div class="q-author">— ${item.author}</div>`:''}
+      ${item.cat?`<div class="q-cats"><span class="q-cat" style="background:${col}22;color:${col};border:1px solid ${col}44">${item.cat}</span></div>`:''}
+    </div>`;
+  } else if(item.type==='image'){
+    inner=`<div class="item-img">
+      <img src="${item.url||''}" alt="${item.title||''}" loading="lazy" onerror="this.style.display='none'">
+      <div class="item-img-caption">
+        <div class="img-title">${item.title||''}</div>
+        ${item.note?`<div class="img-sub">${item.note}</div>`:''}
+      </div>
+    </div>`;
+  } else if(item.type==='link'){
+    inner=`<div class="item-url">
+      <div class="url-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" style="color:var(--muted2)"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></div>
+      <div class="url-title">${item.title||''}</div>
+      <a class="url-link" href="${item.url||'#'}" target="_blank" onclick="event.stopPropagation()">${item.url||''}</a>
+      ${item.note?`<div class="url-note">${item.note}</div>`:''}
+      ${item.cat?`<div class="q-cats" style="margin-top:8px"><span class="q-cat" style="background:${col}22;color:${col};border:1px solid ${col}44">${item.cat}</span></div>`:''}
+    </div>`;
+  }
+  return `<div class="board-item" style="animation-delay:${i*.04}s">
+    <div class="item-card" style="--ic:${col}">${inner}</div>
+    <div class="item-overlay"><button class="btn-del-item" onclick="delItem('${item.id}')">Remove</button></div>
+  </div>`;
+}
+
+function delItem(id){items=items.filter(i=>i.id!==id);save();render();toast('Removed');}
+
+// MODAL
+function openModal(){
+  mType='quote';
+  $('mCat').value='';
+  renderMTabs();renderMFields();
+  $('overlay').classList.add('open');
+}
+function setMType(t){mType=t;renderMTabs();renderMFields();}
+function renderMTabs(){
+  $('mTabs').innerHTML=['quote','image','link'].map(t=>`<button class="m-tab${mType===t?' active':''}" onclick="setMType('${t}')">${t.charAt(0).toUpperCase()+t.slice(1)}</button>`).join('');
+}
+function renderMFields(){
+  const col=CAT_COLORS[Math.floor(Math.random()*CAT_COLORS.length)];
+  if(mType==='quote') $('mFields').innerHTML=`
+    <div class="m-field"><label class="m-label">Quote</label><textarea class="m-input m-textarea" id="mText" placeholder="The quote..."></textarea></div>
+    <div class="m-field"><label class="m-label">Author</label><input class="m-input" id="mAuthor" type="text" placeholder="Author name..."></div>`;
+  else if(mType==='image') $('mFields').innerHTML=`
+    <div class="m-field"><label class="m-label">Image URL</label><input class="m-input" id="mUrl" type="url" placeholder="https://..."></div>
+    <div class="m-field"><label class="m-label">Title</label><input class="m-input" id="mTitle" type="text" placeholder="Image title..."></div>
+    <div class="m-field"><label class="m-label">Note</label><input class="m-input" id="mNote" type="text" placeholder="Optional note..."></div>`;
+  else $('mFields').innerHTML=`
+    <div class="m-field"><label class="m-label">URL</label><input class="m-input" id="mUrl" type="url" placeholder="https://..."></div>
+    <div class="m-field"><label class="m-label">Title</label><input class="m-input" id="mTitle" type="text" placeholder="Link title..."></div>
+    <div class="m-field"><label class="m-label">Note</label><input class="m-input" id="mNote" type="text" placeholder="Why it's inspiring..."></div>`;
+}
+
+function saveItem(){
+  const cat=$('mCat').value.trim();
+  const col=CAT_COLORS[getCats().length%CAT_COLORS.length];
+  let item={id:'i'+Date.now(),type:mType,cat,col};
+  if(mType==='quote'){
+    const text=document.getElementById('mText')?.value.trim();
+    if(!text){toast('Enter a quote first');return;}
+    item.text=text; item.author=document.getElementById('mAuthor')?.value.trim()||'';
+  } else {
+    const url=document.getElementById('mUrl')?.value.trim();
+    const title=document.getElementById('mTitle')?.value.trim();
+    if(!url&&!title){toast('Enter a URL or title');return;}
+    item.url=url||''; item.title=title||''; item.note=document.getElementById('mNote')?.value.trim()||'';
+  }
+  items.unshift(item);save();closeModal();render();toast('Added to board ✦');
+  // Sync quotes to daily feed
+  if(mType==='quote'&&item.text) syncQuoteToFeed(item.text,item.author||'');
+}
+
+function closeModal(){$('overlay').classList.remove('open');}
+function closeOut(e){if(e.target===$('overlay'))closeModal();}
+
+loadDailyFeed();
+render();
+</script>
+</body>
+</html>

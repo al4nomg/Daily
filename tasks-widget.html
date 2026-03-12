@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tasks</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #100d0a;
+    --surface: #1c1710;
+    --surface2: #221c14;
+    --border: #2e2318;
+    --border2: #3d3025;
+    --text: #e8dfd3;
+    --text2: #c4b8a8;
+    --muted: #6a5a48;
+    --muted2: #9a8a78;
+    --accent: #c4904f;
+    --accent2: #e0b47a;
+    --accent3: #f0c98a;
+    --green: #7aaa88;
+    --red: #b05555;
+    --red2: #d46666;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  /* BG orbs */
+  .orb {
+    position: fixed; border-radius: 50%;
+    filter: blur(90px); pointer-events: none;
+  }
+  .orb-1 { width: 320px; height: 320px; background: radial-gradient(circle, #c4904f, transparent); top: -100px; right: -80px; opacity: 0.1; animation: o1 14s ease-in-out infinite; }
+  .orb-2 { width: 220px; height: 220px; background: radial-gradient(circle, #7a5c3a, transparent); bottom: -60px; left: -50px; opacity: 0.09; animation: o2 17s ease-in-out infinite; }
+  .orb-3 { width: 160px; height: 160px; background: radial-gradient(circle, #e0b47a, transparent); top: 40%; left: 5%; opacity: 0.05; animation: o3 20s ease-in-out infinite; }
+  @keyframes o1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-18px,28px) scale(1.08)} }
+  @keyframes o2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(22px,-32px)} }
+  @keyframes o3 { 0%,100%{transform:translate(0,0); opacity:.05} 50%{transform:translate(15px,-20px); opacity:.09} }
+
+  .widget {
+    width: 700px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.7s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 22px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  /* Animated accent line */
+  .header::after {
+    content: '';
+    position: absolute;
+    bottom: -1px; left: 0;
+    height: 1px;
+    background: linear-gradient(to right, var(--accent), transparent);
+    width: 0;
+    animation: lineGrow 1s 0.4s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  .widget-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 300;
+    letter-spacing: 0.06em;
+    color: var(--text);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .widget-sub {
+    font-size: 9px;
+    letter-spacing: 0.28em;
+    color: var(--muted2);
+    text-transform: uppercase;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+  .header-stats {
+    display: flex;
+    gap: 20px;
+    align-items: flex-end;
+  }
+  .stat-pill {
+    text-align: right;
+  }
+  .stat-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-weight: 300;
+    color: var(--accent2);
+    line-height: 1;
+    transition: all 0.3s;
+  }
+  .stat-lbl {
+    font-size: 8px;
+    letter-spacing: 0.22em;
+    color: var(--muted2);
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+
+  /* ── ADD FORM ── */
+  .add-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: stretch;
+  }
+  .task-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 11px 16px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    outline: none;
+    transition: border-color 0.25s, box-shadow 0.25s, background 0.25s;
+  }
+  .task-input::placeholder { color: var(--muted); }
+  .task-input:focus {
+    border-color: var(--accent);
+    background: var(--surface2);
+    box-shadow: 0 0 0 2px rgba(196,144,79,0.1), inset 0 1px 0 rgba(196,144,79,0.05);
+  }
+  .date-input {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 11px 12px;
+    color: var(--muted2);
+    font-family: 'Inter', sans-serif;
+    font-size: 10px;
+    font-weight: 300;
+    outline: none;
+    transition: border-color 0.25s, color 0.25s;
+    cursor: pointer;
+    color-scheme: dark;
+    min-width: 132px;
+  }
+  .date-input:focus { border-color: var(--accent); color: var(--text2); }
+  .btn-add {
+    background: none;
+    border: 1px solid var(--accent);
+    border-radius: 2px;
+    padding: 11px 18px;
+    color: var(--accent2);
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all 0.22s;
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+  }
+  .btn-add::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+    z-index: 0;
+  }
+  .btn-add:hover::before { transform: translateX(0); }
+  .btn-add:hover { color: var(--bg); }
+  .btn-add span { position: relative; z-index: 1; }
+
+  /* ── FILTERS ── */
+  .filters {
+    display: flex;
+    margin-bottom: 14px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  .filter-indicator {
+    position: absolute; top: 0; bottom: 0;
+    background: var(--border2);
+    transition: left 0.35s cubic-bezier(0.34,1.2,0.64,1), width 0.35s cubic-bezier(0.34,1.2,0.64,1);
+    pointer-events: none;
+  }
+  .filter-btn {
+    flex: 1; padding: 8px 8px;
+    background: none; border: none;
+    color: var(--muted2);
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 300;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    cursor: pointer; transition: color 0.2s;
+    position: relative; z-index: 1;
+    border-right: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center; gap: 5px;
+  }
+  .filter-btn:last-child { border-right: none; }
+  .filter-btn.active { color: var(--accent2); }
+  .filter-btn:hover:not(.active) { color: var(--text); }
+  .filter-count {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 12px;
+    color: var(--muted);
+    transition: color 0.2s;
+    line-height: 1;
+  }
+  .filter-btn.active .filter-count { color: var(--accent); }
+
+  /* ── TABLE ── */
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.3);
+  }
+  .table-wrap::before { content:''; position:absolute; top:7px; left:7px; width:9px; height:9px; border:1px solid var(--accent); border-right:none; border-bottom:none; opacity:0.35; pointer-events:none; z-index:3; }
+  .table-wrap::after  { content:''; position:absolute; bottom:7px; right:7px; width:9px; height:9px; border:1px solid var(--accent); border-left:none; border-top:none; opacity:0.35; pointer-events:none; z-index:3; }
+
+  .table-head {
+    display: grid;
+    grid-template-columns: 32px 1fr 120px 115px 38px;
+    padding: 9px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    gap: 8px; align-items: center;
+  }
+  .col-head {
+    font-size: 9px; letter-spacing: 0.25em;
+    text-transform: uppercase; color: var(--muted2);
+  }
+
+  .table-body { background: var(--surface); min-height: 70px; }
+
+  /* ── TASK ROW ── */
+  .task-row {
+    display: grid;
+    grid-template-columns: 32px 1fr 120px 115px 38px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px; align-items: center;
+    position: relative;
+    animation: rowIn 0.3s cubic-bezier(0.16,1,0.3,1) both;
+    transition: background 0.2s;
+    cursor: default;
+  }
+  .task-row:last-child { border-bottom: none; }
+
+  /* Left accent bar on hover */
+  .task-row::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 20%; bottom: 20%;
+    width: 2px;
+    background: var(--accent);
+    transform: scaleY(0);
+    transition: transform 0.2s cubic-bezier(0.34,1.2,0.64,1);
+    border-radius: 1px;
+  }
+  .task-row:hover { background: rgba(196,144,79,0.04); }
+  .task-row:hover::before { transform: scaleY(1); }
+  .task-row.done { opacity: 0.38; }
+  .task-row.done:hover { opacity: 0.55; }
+
+  /* ── CHECKBOX ── */
+  .checkbox {
+    width: 15px; height: 15px;
+    border: 1px solid var(--muted);
+    border-radius: 2px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.22s cubic-bezier(0.34,1.2,0.64,1);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .checkbox:hover {
+    border-color: var(--accent2);
+    transform: scale(1.15);
+    box-shadow: 0 0 8px rgba(196,144,79,0.25);
+  }
+  .checkbox.checked {
+    background: var(--accent);
+    border-color: var(--accent);
+    animation: checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .checkbox.checked::after {
+    content: '';
+    width: 8px; height: 5px;
+    border-left: 1.5px solid #100d0a;
+    border-bottom: 1.5px solid #100d0a;
+    transform: rotate(-45deg) translateY(-1px);
+  }
+
+  /* ── TASK NAME ── */
+  .task-name {
+    font-size: 12.5px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: 0.03em;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    transition: color 0.25s;
+    line-height: 1.3;
+  }
+  .task-row:hover .task-name { color: var(--accent3); }
+  .task-row.done .task-name {
+    text-decoration: line-through;
+    color: var(--muted2);
+  }
+  .task-row.done:hover .task-name { color: var(--muted2); }
+
+  /* ── STATUS BADGE ── */
+  .status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 9px;
+    border-radius: 2px;
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border: 1px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s cubic-bezier(0.34,1.2,0.64,1);
+    user-select: none;
+  }
+  .status-badge::before {
+    content: '';
+    width: 4px; height: 4px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+  }
+  .status-badge:hover { transform: translateY(-1px); }
+  .status-badge:hover::before { transform: scale(1.4); }
+  .status-badge:active { transform: scale(0.95); }
+
+  .status-badge.pending  { color: var(--muted2); border-color: var(--border2); }
+  .status-badge.pending::before { background: var(--muted2); }
+  .status-badge.progress { color: var(--accent2); border-color: rgba(196,144,79,0.35); background: rgba(196,144,79,0.07); }
+  .status-badge.progress::before { background: var(--accent2); animation: dotPulse 1.5s ease-in-out infinite; }
+  .status-badge.done-s   { color: var(--green); border-color: rgba(122,170,136,0.35); background: rgba(122,170,136,0.07); }
+  .status-badge.done-s::before { background: var(--green); }
+
+  /* ── DUE DATE ── */
+  .due-date {
+    font-size: 10.5px;
+    color: var(--text2);
+    letter-spacing: 0.04em;
+  }
+  .due-date.overdue {
+    color: var(--red2);
+    animation: overdueShake 0.4s ease;
+  }
+  .due-date.today { color: var(--accent2); font-weight: 400; }
+
+  /* ── DELETE ── */
+  .btn-delete {
+    background: none; border: none;
+    color: var(--muted);
+    cursor: pointer; padding: 5px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 2px;
+    transition: all 0.2s;
+    opacity: 0; transform: scale(0.8);
+  }
+  .task-row:hover .btn-delete { opacity: 1; transform: scale(1); }
+  .btn-delete:hover { color: var(--red2); background: rgba(176,85,85,0.12); transform: scale(1.1) !important; }
+  .btn-delete:active { transform: scale(0.9) !important; }
+
+  /* ── EMPTY ── */
+  .empty {
+    padding: 44px 0;
+    text-align: center;
+    color: var(--muted);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 16px;
+    font-style: italic;
+    letter-spacing: 0.1em;
+    animation: fadeUp 0.4s ease;
+  }
+  .empty-sub {
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-top: 6px;
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    opacity: 0.6;
+  }
+
+  /* ── STATS BAR ── */
+  .stats {
+    margin-top: 16px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .progress-bar-wrap {
+    flex: 1; height: 2px;
+    background: var(--border);
+    border-radius: 1px; overflow: hidden;
+    position: relative;
+  }
+  .progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--accent), var(--accent2), var(--accent3));
+    border-radius: 1px;
+    transition: width 0.6s cubic-bezier(0.34,1.2,0.64,1);
+    width: 0%;
+    position: relative;
+  }
+  /* Shimmer on progress bar */
+  .progress-bar-fill::after {
+    content: '';
+    position: absolute;
+    top: 0; bottom: 0; right: 0;
+    width: 20px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.3));
+    border-radius: 1px;
+  }
+  .stats-label {
+    font-size: 9px; letter-spacing: 0.15em;
+    color: var(--muted2); text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .stats-label em {
+    color: var(--accent2);
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 14px; font-style: normal;
+    font-weight: 300;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-left: 2px solid var(--accent);
+    padding: 10px 20px;
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text2);
+    opacity: 0;
+    transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    pointer-events: none;
+    z-index: 100;
+    white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes lineGrow { from{width:0} to{width:40%} }
+  @keyframes rowIn { from{opacity:0;transform:translateX(-6px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes checkPop { 0%{transform:scale(0.8)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  @keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
+  @keyframes overdueShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="toast" id="toast"></div>
+
+<div class="widget">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="widget-title">Pending Tasks</div>
+      <div class="widget-sub">task manager</div>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill">
+        <div class="stat-num" id="statPending">0</div>
+        <div class="stat-lbl">pending</div>
+      </div>
+      <div class="stat-pill">
+        <div class="stat-num" id="statDone">0</div>
+        <div class="stat-lbl">done</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ADD FORM -->
+  <div class="add-form">
+    <input class="task-input" id="taskInput" type="text"
+      placeholder="What needs to be done..." maxlength="90"
+      onkeydown="if(event.key==='Enter') addTask()">
+    <input class="date-input" id="dateInput" type="date">
+    <button class="btn-add" onclick="addTask()"><span>+ Add</span></button>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters" id="filtersBar">
+    <div class="filter-indicator" id="filterIndicator"></div>
+    <button class="filter-btn active" onclick="setFilter('all',0)">All <span class="filter-count" id="fc-all">0</span></button>
+    <button class="filter-btn" onclick="setFilter('pending',1)">Pending <span class="filter-count" id="fc-pending">0</span></button>
+    <button class="filter-btn" onclick="setFilter('progress',2)">In Progress <span class="filter-count" id="fc-progress">0</span></button>
+    <button class="filter-btn" onclick="setFilter('done',3)">Done <span class="filter-count" id="fc-done">0</span></button>
+  </div>
+
+  <!-- TABLE -->
+  <div class="table-wrap">
+    <div class="table-head">
+      <div></div>
+      <div class="col-head">Task</div>
+      <div class="col-head">Status</div>
+      <div class="col-head">Due date</div>
+      <div></div>
+    </div>
+    <div class="table-body" id="tableBody"></div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <span class="stats-label"><em id="doneCount">0</em> / <em id="totalCount">0</em> completed</span>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" id="progressFill"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const STATUSES = ['pending','progress','done-s'];
+  const STATUS_LABELS = { pending:'Pending', progress:'In Progress', 'done-s':'Done' };
+  let tasks = JSON.parse(localStorage.getItem('da-tasks2') || '[]');
+  let currentFilter = 'all';
+
+  const $ = id => document.getElementById(id);
+  function save() { localStorage.setItem('da-tasks2', JSON.stringify(tasks)); }
+
+  function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  function addTask() {
+    const input = $('taskInput');
+    const dateInput = $('dateInput');
+    const name = input.value.trim();
+    if (!name) {
+      input.style.borderColor = 'var(--red)';
+      setTimeout(() => input.style.borderColor = '', 600);
+      input.focus(); return;
+    }
+    tasks.unshift({ id: Date.now(), name, status: 'pending', due: dateInput.value || null, done: false });
+    input.value = ''; dateInput.value = '';
+    save(); render();
+    showToast('Task added');
+  }
+
+  function toggleDone(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t) return;
+    t.done = !t.done;
+    t.status = t.done ? 'done-s' : 'pending';
+    save(); render();
+    if (t.done) showToast('Task completed ✦');
+  }
+
+  function cycleStatus(id) {
+    const t = tasks.find(t => t.id === id);
+    if (!t) return;
+    const idx = STATUSES.indexOf(t.status);
+    t.status = STATUSES[(idx + 1) % STATUSES.length];
+    t.done = t.status === 'done-s';
+    save(); render();
+    showToast(`Status → ${STATUS_LABELS[t.status]}`);
+  }
+
+  function deleteTask(id) {
+    const row = document.querySelector(`[data-id="${id}"]`);
+    if (row) {
+      row.style.transition = 'all 0.22s ease';
+      row.style.opacity = '0';
+      row.style.transform = 'translateX(12px)';
+      setTimeout(() => { tasks = tasks.filter(t => t.id !== id); save(); render(); }, 220);
+    }
+    showToast('Task removed');
+  }
+
+  function setFilter(f, idx) {
+    currentFilter = f;
+    document.querySelectorAll('.filter-btn').forEach((b,i) => b.classList.toggle('active', i === idx));
+    const bar = $('filtersBar');
+    const btnW = bar.offsetWidth / 4;
+    $('filterIndicator').style.left = (idx * btnW) + 'px';
+    $('filterIndicator').style.width = btnW + 'px';
+    render();
+  }
+
+  function formatDate(str) {
+    if (!str) return { text: '—', cls: '' };
+    const d = new Date(str + 'T00:00:00');
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diff = d - today;
+    const dayMs = 86400000;
+    if (diff < 0) return { text: d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}), cls: 'overdue' };
+    if (diff === 0) return { text: 'Today', cls: 'today' };
+    if (diff === dayMs) return { text: 'Tomorrow', cls: 'today' };
+    return { text: d.toLocaleDateString('en-GB',{day:'2-digit',month:'short'}), cls: '' };
+  }
+
+  function render() {
+    const filtered = tasks.filter(t => {
+      if (currentFilter === 'all')      return true;
+      if (currentFilter === 'pending')  return t.status === 'pending';
+      if (currentFilter === 'progress') return t.status === 'progress';
+      if (currentFilter === 'done')     return t.status === 'done-s';
+    });
+
+    const body = $('tableBody');
+    if (filtered.length === 0) {
+      body.innerHTML = `<div class="empty">Nothing here yet<div class="empty-sub">add a task above</div></div>`;
+    } else {
+      body.innerHTML = filtered.map((t, i) => {
+        const { text: dateText, cls: dateCls } = formatDate(t.due);
+        return `
+        <div class="task-row ${t.done ? 'done' : ''}" data-id="${t.id}" style="animation-delay:${i*0.045}s">
+          <div class="checkbox ${t.done ? 'checked' : ''}" onclick="toggleDone(${t.id})"></div>
+          <div class="task-name" title="${t.name}">${t.name}</div>
+          <div>
+            <span class="status-badge ${t.status}" onclick="cycleStatus(${t.id})">
+              ${STATUS_LABELS[t.status]}
+            </span>
+          </div>
+          <div class="due-date ${dateCls}">${dateText}</div>
+          <button class="btn-delete" onclick="deleteTask(${t.id})" title="Delete">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>`;
+      }).join('');
+    }
+
+    // Counts
+    const total    = tasks.length;
+    const done     = tasks.filter(t => t.done).length;
+    const pending  = tasks.filter(t => t.status === 'pending').length;
+    const progress = tasks.filter(t => t.status === 'progress').length;
+    const doneS    = tasks.filter(t => t.status === 'done-s').length;
+
+    $('statPending').textContent = pending;
+    $('statDone').textContent = done;
+    $('doneCount').textContent = done;
+    $('totalCount').textContent = total;
+    $('progressFill').style.width = total ? `${(done/total)*100}%` : '0%';
+
+    $('fc-all').textContent      = total;
+    $('fc-pending').textContent  = pending;
+    $('fc-progress').textContent = progress;
+    $('fc-done').textContent     = doneS;
+  }
+
+  window.addEventListener('load', () => {
+    const bar = $('filtersBar');
+    $('filterIndicator').style.left  = '0px';
+    $('filterIndicator').style.width = (bar.offsetWidth / 4) + 'px';
+    render();
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Scriptorium</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0e0b08;--surface:#181310;--surface2:#201a12;--surface3:#282218;
+  --border:#2e2318;--border2:#3e3228;
+  --text:#f0e8dc;--text2:#d4c8b8;--muted:#6a5a48;--muted2:#9a8a78;
+  --accent:#c4904f;--accent2:#e0b47a;--green:#7aaa88;--red:#c06060;--blue:#6a9aaa;--purple:#9a7aaa;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;min-height:100vh;padding:32px 20px 60px;position:relative;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:200;}
+.orb{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;}
+.o1{width:450px;height:450px;background:radial-gradient(circle,#c4904f,transparent);top:-100px;right:-100px;opacity:.07;animation:o1 18s ease-in-out infinite;}
+.o2{width:280px;height:280px;background:radial-gradient(circle,#9a7aaa,transparent);bottom:-60px;left:-60px;opacity:.05;animation:o2 22s ease-in-out infinite;}
+@keyframes o1{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,30px)}}
+@keyframes o2{0%,100%{transform:translate(0,0)}50%{transform:translate(25px,-30px)}}
+
+.app{max-width:880px;margin:0 auto;position:relative;z-index:1;animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);position:relative;}
+.header::after{content:'';position:absolute;bottom:-1px;left:0;height:1px;width:0;background:linear-gradient(to right,var(--accent),var(--accent2) 40%,transparent 70%);animation:lineGrow 1s .2s forwards;}
+@keyframes lineGrow{to{width:55%}}
+.title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--text);text-shadow:0 0 40px rgba(196,144,79,.2);}
+.title span{font-style:italic;font-weight:300;}
+.subtitle{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.28em;color:var(--muted2);text-transform:uppercase;margin-top:3px;}
+.hdr-right{display:flex;gap:8px;}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:270px 1fr;gap:16px;min-height:75vh;}
+
+/* SIDEBAR */
+.sidebar{display:flex;flex-direction:column;gap:0;overflow-y:auto;max-height:80vh;}
+
+/* TYPE SECTIONS — collapsible */
+.type-section{margin-bottom:4px;}
+.type-header{display:flex;align-items:center;gap:8px;padding:8px 10px;cursor:pointer;border-radius:2px;transition:background .15s;border:1px solid transparent;user-select:none;}
+.type-header:hover{background:var(--surface2);}
+.type-header.open{border-color:var(--border);background:var(--surface);}
+.th-chevron{width:12px;height:12px;color:var(--muted);transition:transform .22s cubic-bezier(.34,1.2,.64,1);flex-shrink:0;}
+.type-header.open .th-chevron{transform:rotate(90deg);}
+.th-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.th-name{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--muted2);text-transform:uppercase;flex:1;transition:color .15s;}
+.type-header.open .th-name,.type-header:hover .th-name{color:var(--text2);}
+.th-count{font-family:'Share Tech Mono',monospace;font-size:8px;color:var(--muted);background:var(--surface3);padding:1px 5px;border-radius:1px;}
+
+.type-body{display:none;flex-direction:column;gap:4px;padding:4px 0 4px 6px;overflow:hidden;}
+.type-body.open{display:flex;animation:slideOpen .25s cubic-bezier(.16,1,.3,1);}
+@keyframes slideOpen{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
+
+/* ENTRY CARDS */
+.entry-card{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:10px 12px;cursor:pointer;transition:all .16s;position:relative;overflow:hidden;}
+.entry-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--ec,var(--accent));opacity:0;transition:opacity .16s;}
+.entry-card:hover::before,.entry-card.active::before{opacity:.6;}
+.entry-card:hover,.entry-card.active{background:var(--surface2);border-color:var(--border2);}
+.entry-card.active{border-color:var(--accent);}
+.ec-date{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.12em;color:var(--muted);text-transform:uppercase;margin-bottom:3px;}
+.ec-title{font-family:'Cormorant Garamond',serif;font-size:13px;font-weight:600;color:var(--text2);letter-spacing:.02em;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;margin-bottom:2px;}
+.ec-preview{font-size:10px;color:var(--muted2);overflow:hidden;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;line-height:1.3;}
+
+/* EDITOR PANE */
+.editor-pane{display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--border);border-radius:2px;position:relative;overflow:hidden;}
+.editor-pane::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--accent),var(--accent2),transparent);}
+.editor-pane::after{content:'';position:absolute;top:6px;left:6px;width:8px;height:8px;border-top:1px solid var(--accent);border-left:1px solid var(--accent);opacity:.3;}
+.ed-header{padding:16px 20px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+.title-input{flex:1;min-width:180px;background:none;border:none;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;letter-spacing:.04em;outline:none;}
+.title-input::placeholder{color:var(--muted);}
+.type-select{background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:5px 10px;color:var(--muted2);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;outline:none;cursor:pointer;}
+.tag-input{background:none;border:none;border-bottom:1px solid var(--border);padding:4px 8px;color:var(--text2);font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.12em;outline:none;width:120px;transition:border-color .2s;}
+.tag-input:focus{border-color:var(--accent);}
+.tag-input::placeholder{color:var(--muted);}
+.ed-toolbar{padding:7px 20px;border-bottom:1px solid var(--border);display:flex;gap:6px;align-items:center;flex-wrap:wrap;}
+.tb-btn{background:none;border:1px solid var(--border);border-radius:2px;padding:3px 8px;color:var(--muted2);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.12em;transition:all .15s;text-transform:uppercase;}
+.tb-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.wc{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.12em;color:var(--muted);margin-left:auto;}
+.ed-body{flex:1;padding:20px;}
+.main-textarea{width:100%;height:100%;min-height:360px;background:none;border:none;color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;font-style:italic;letter-spacing:.03em;line-height:1.8;outline:none;resize:none;}
+.main-textarea::placeholder{color:var(--muted);}
+.ed-footer{padding:10px 20px;border-top:1px solid var(--border);display:flex;gap:8px;align-items:center;}
+.save-btn{background:none;border:1px solid var(--accent);border-radius:2px;padding:7px 18px;color:var(--accent2);cursor:pointer;font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;transition:all .2s;position:relative;overflow:hidden;}
+.save-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateX(-101%);transition:transform .25s cubic-bezier(.16,1,.3,1);z-index:0;}
+.save-btn:hover::before{transform:translateX(0);}
+.save-btn:hover{color:#0e0b08;}
+.save-btn span{position:relative;z-index:1;}
+.del-btn{background:none;border:1px solid rgba(192,96,96,.3);border-radius:2px;padding:7px 12px;color:var(--red);cursor:pointer;font-family:'Inter',sans-serif;font-size:9px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;transition:all .2s;}
+.del-btn:hover{background:rgba(192,96,96,.1);border-color:var(--red);}
+.auto-save{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-left:auto;animation:fadeIn .3s;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+
+/* EMPTY STATE */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:48px;text-align:center;}
+.empty-icon{color:var(--muted);opacity:.4;margin-bottom:16px;}
+.empty-txt{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:300;font-style:italic;color:var(--muted2);margin-bottom:8px;}
+.empty-sub{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--muted);text-transform:uppercase;}
+
+/* BTN NEW */
+.btn-new{background:none;border:1px solid var(--accent);border-radius:2px;padding:8px 16px;color:var(--accent2);cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;transition:all .22s;position:relative;overflow:hidden;}
+.btn-new::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateX(-101%);transition:transform .25s cubic-bezier(.16,1,.3,1);z-index:0;}
+.btn-new:hover::before{transform:translateX(0);}
+.btn-new:hover{color:#0e0b08;}
+.btn-new span{position:relative;z-index:1;}
+
+/* DAILY PROMPT BANNER */
+.daily-banner{background:var(--surface);border:1px solid var(--border2);border-left:3px solid var(--purple);border-radius:2px;padding:12px 16px;margin-bottom:14px;display:flex;align-items:flex-start;gap:10px;cursor:pointer;transition:all .2s;}
+.daily-banner:hover{border-color:var(--accent);border-left-color:var(--accent);}
+.db-label{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.22em;color:var(--purple);text-transform:uppercase;flex-shrink:0;margin-top:1px;}
+.db-text{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--muted2);letter-spacing:.03em;line-height:1.4;flex:1;}
+.db-use{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;white-space:nowrap;align-self:center;}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(24px);background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:400;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<div class="toast" id="toast"></div>
+<div class="app">
+
+<div class="header">
+  <div>
+    <div class="title">The <span>Scriptorium</span></div>
+    <div class="subtitle">writing · ideas · thoughts</div>
+  </div>
+  <div class="hdr-right">
+    <button class="btn-new" onclick="newEntry()"><span>+ New Entry</span></button>
+  </div>
+</div>
+
+<div class="layout">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <!-- Daily prompt from shared feed -->
+    <div class="daily-banner" id="dailyBanner" onclick="usePrompt()">
+      <span class="db-label">Prompt</span>
+      <span class="db-text" id="dailyPromptTxt">Loading...</span>
+      <span class="db-use">Use →</span>
+    </div>
+
+    <!-- Type sections (collapsible) -->
+    <div id="typeSections"></div>
+  </div>
+
+  <!-- EDITOR -->
+  <div class="editor-pane" id="editorPane">
+    <div class="empty">
+      <div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C14 4 6 10 4 20"/><path d="M20 4c-2 6-6 10-10 14"/><path d="M4 20l4-2-2-2"/></svg></div>
+      <div class="empty-txt">Begin writing something</div>
+      <div class="empty-sub">Select an entry or create a new one</div>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+const TYPES=[
+  {id:'idea',    label:'Ideas',    col:'#e0b47a'},
+  {id:'essay',   label:'Essays',   col:'#7aaa88'},
+  {id:'journal', label:'Journal',  col:'#6a9aaa'},
+  {id:'poem',    label:'Poems',    col:'#9a7aaa'},
+  {id:'note',    label:'Notes',    col:'#c4904f'},
+];
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const dFmt=(d)=>{const t=new Date(d);return `${pad(t.getDate())}·${pad(t.getMonth()+1)}·${t.getFullYear()}`;};
+const dKey=()=>{const n=new Date();return `${n.getFullYear()}-${pad(n.getMonth()+1)}-${pad(n.getDate())}`;};
+
+let entries=JSON.parse(localStorage.getItem('scrip-entries')||'[]');
+if(!entries.length){
+  entries=[
+    {id:'1',type:'journal',title:'First entry',body:'The library smells like old paper and ambition. Per aspera ad astra — through hardship to the stars.',tags:['reflection'],date:new Date().toISOString()},
+    {id:'2',type:'idea',title:'On the nature of knowledge',body:'What separates knowing from understanding? Plato would say...',tags:['philosophy'],date:new Date().toISOString()},
+    {id:'3',type:'poem',title:'Nocturn',body:'The candle burns low,\nand still I read.',tags:['noche'],date:new Date().toISOString()},
+  ];
+  save();
+}
+
+// Track which sections are open (all open by default)
+let openSections=JSON.parse(localStorage.getItem('scrip-open')||'null');
+if(!openSections) openSections=TYPES.map(t=>t.id);
+
+let activeId=null, autoSaveTimer=null;
+
+function save(){localStorage.setItem('scrip-entries',JSON.stringify(entries));}
+function saveOpenState(){localStorage.setItem('scrip-open',JSON.stringify(openSections));}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2000);}
+
+// ── DAILY PROMPT from shared feed ────────────────────────────────────────────
+function loadDailyPrompt(){
+  // Read from shared daily-feed localStorage
+  const feed=JSON.parse(localStorage.getItem('daily-feed')||'null');
+  const today=dKey();
+  let prompt='';
+
+  if(feed?.prompts?.length){
+    // Pick deterministically by day-of-year
+    const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/(1000*60*60*24));
+    prompt=feed.prompts[doy % feed.prompts.length];
+  } else {
+    // Fallback built-in prompts
+    const fallbacks=[
+      'Escribí sobre un momento en que la duda fue más útil que la certeza.',
+      'Describí tu ideal de día perfecto de estudio.',
+      'Si pudieras hablar con cualquier filósofo, ¿qué le preguntarías?',
+      '¿Qué libro cambió tu forma de ver el mundo?',
+      'Describí una idea que te obsesiona últimamente.',
+      'Escribí sobre algo que aprendiste esta semana que no esperabas aprender.',
+      '¿Qué significa para vos per aspera ad astra?',
+      'Describí una biblioteca imaginaria perfecta.',
+      '¿En qué momento del día pensás más claramente?',
+      'Escribí sobre el silencio.',
+    ];
+    const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/(1000*60*60*24));
+    prompt=fallbacks[doy % fallbacks.length];
+  }
+  $('dailyPromptTxt').textContent=prompt;
+  return prompt;
+}
+
+function usePrompt(){
+  const prompt=$('dailyPromptTxt').textContent;
+  if(!prompt) return;
+  const id='e'+Date.now();
+  entries.unshift({id,type:'journal',title:'',body:prompt+'\n\n',tags:['prompt'],date:new Date().toISOString()});
+  save(); activeId=id; renderSections(); renderEditor();
+  // Focus textarea after render
+  setTimeout(()=>{
+    const ta=document.getElementById('edBody');
+    if(ta){ta.focus();ta.setSelectionRange(ta.value.length,ta.value.length);}
+  },80);
+  toast('Prompt loaded ✦');
+}
+
+// ── SECTIONS ─────────────────────────────────────────────────────────────────
+function toggleSection(typeId){
+  if(openSections.includes(typeId)) openSections=openSections.filter(x=>x!==typeId);
+  else openSections.push(typeId);
+  saveOpenState();
+  renderSections();
+}
+
+function renderSections(){
+  $('typeSections').innerHTML=TYPES.map(t=>{
+    const typeEntries=entries.filter(e=>e.type===t.id).sort((a,b)=>new Date(b.date)-new Date(a.date));
+    const isOpen=openSections.includes(t.id);
+    const cardsHtml=typeEntries.map(e=>`
+      <div class="entry-card${e.id===activeId?' active':''}" style="--ec:${t.col}" onclick="openEntry('${e.id}')">
+        <div class="ec-date">${dFmt(e.date)}</div>
+        <div class="ec-title">${e.title||'Untitled'}</div>
+        <div class="ec-preview">${e.body||''}</div>
+      </div>`).join('') || `<div style="font-family:'Cormorant Garamond',serif;font-size:11px;font-style:italic;color:var(--muted);padding:8px 10px">Empty</div>`;
+
+    return `<div class="type-section">
+      <div class="type-header${isOpen?' open':''}" onclick="toggleSection('${t.id}')">
+        <svg class="th-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9,18 15,12 9,6"/></svg>
+        <div class="th-dot" style="background:${t.col}"></div>
+        <span class="th-name">${t.label}</span>
+        <span class="th-count">${typeEntries.length}</span>
+      </div>
+      <div class="type-body${isOpen?' open':''}">
+        ${cardsHtml}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function render(){renderSections();}
+
+// ── ENTRY OPEN/EDIT ───────────────────────────────────────────────────────────
+function newEntry(){
+  const id='e'+Date.now();
+  entries.unshift({id,type:'note',title:'',body:'',tags:[],date:new Date().toISOString()});
+  save(); activeId=id; renderSections(); renderEditor();
+}
+
+function openEntry(id){
+  if(activeId&&activeId!==id) saveCurrentSilently();
+  activeId=id; renderSections(); renderEditor();
+}
+
+function renderEditor(){
+  const entry=entries.find(e=>e.id===activeId);
+  if(!entry){
+    $('editorPane').innerHTML=`<div class="empty"><div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C14 4 6 10 4 20"/><path d="M20 4c-2 6-6 10-10 14"/><path d="M4 20l4-2-2-2"/></svg></div><div class="empty-txt">Begin writing something</div><div class="empty-sub">Select an entry or create a new one</div></div>`;
+    return;
+  }
+  const tc=TYPES.find(t=>t.id===entry.type)?.col||'var(--accent)';
+  const typeOpts=TYPES.map(t=>`<option value="${t.id}"${t.id===entry.type?' selected':''}>${t.label.slice(0,-1)}</option>`).join('');
+  $('editorPane').innerHTML=`
+    <div class="ed-header">
+      <input class="title-input" id="edTitle" type="text" value="${(entry.title||'').replace(/"/g,'&quot;')}" placeholder="Title..." onkeyup="scheduleAutosave()">
+      <select class="type-select" id="edType" onchange="scheduleAutosave()">${typeOpts}</select>
+      <input class="tag-input" id="edTags" type="text" value="${(entry.tags||[]).join(', ')}" placeholder="#tags" onkeyup="scheduleAutosave()">
+    </div>
+    <div class="ed-toolbar">
+      <button class="tb-btn" onclick="insertFmt('**','**')">Bold</button>
+      <button class="tb-btn" onclick="insertFmt('*','*')">Italic</button>
+      <button class="tb-btn" onclick="insertFmt('— ','')">—</button>
+      <button class="tb-btn" onclick="insertFmt('\u201c','\u201d')">Quotes</button>
+      <button class="tb-btn" onclick="insertFmt('\\n---\\n','')">Divider</button>
+      <button class="tb-btn" onclick="insertFmt('\\n> ','')">Quote block</button>
+      <span class="wc" id="wc">0 words</span>
+    </div>
+    <div class="ed-body">
+      <textarea class="main-textarea" id="edBody" placeholder="Write freely..." oninput="scheduleAutosave();updateWc()">${entry.body||''}</textarea>
+    </div>
+    <div class="ed-footer">
+      <button class="save-btn" onclick="saveEntry()"><span>Save</span></button>
+      <button class="del-btn" onclick="delEntry()">Delete</button>
+      <span class="auto-save" id="autoSaveLbl"></span>
+    </div>`;
+  updateWc();
+}
+
+function updateWc(){
+  const ta=document.getElementById('edBody'); if(!ta)return;
+  const words=ta.value.trim().split(/\s+/).filter(w=>w).length;
+  const wc=document.getElementById('wc'); if(wc)wc.textContent=words+' words';
+}
+function insertFmt(pre,post){
+  const ta=document.getElementById('edBody'); if(!ta)return;
+  const s=ta.selectionStart,e=ta.selectionEnd,val=ta.value;
+  ta.value=val.slice(0,s)+pre+val.slice(s,e)+post+val.slice(e);
+  ta.focus(); ta.selectionStart=s+pre.length; ta.selectionEnd=s+pre.length+(e-s);
+  scheduleAutosave();
+}
+function scheduleAutosave(){
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer=setTimeout(()=>{
+    saveCurrentSilently();
+    const l=document.getElementById('autoSaveLbl');
+    if(l){l.textContent='Saved';setTimeout(()=>{if(l)l.textContent=''},2000);}
+  },1500);
+}
+function getCurrentData(){
+  return {
+    title:document.getElementById('edTitle')?.value||'',
+    body:document.getElementById('edBody')?.value||'',
+    type:document.getElementById('edType')?.value||'note',
+    tags:(document.getElementById('edTags')?.value||'').split(',').map(t=>t.trim().replace('#','')).filter(t=>t),
+  };
+}
+function saveCurrentSilently(){
+  if(!activeId)return;
+  const entry=entries.find(e=>e.id===activeId); if(!entry)return;
+  Object.assign(entry,getCurrentData(),{date:new Date().toISOString()});
+  save(); renderSections();
+}
+function saveEntry(){saveCurrentSilently();toast('Entry saved ✦');}
+function delEntry(){
+  if(!activeId)return;
+  entries=entries.filter(e=>e.id!==activeId);
+  save(); activeId=null; renderSections();
+  $('editorPane').innerHTML=`<div class="empty"><div class="empty-icon"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C14 4 6 10 4 20"/><path d="M20 4c-2 6-6 10-10 14"/><path d="M4 20l4-2-2-2"/></svg></div><div class="empty-txt">Begin writing something</div><div class="empty-sub">Select an entry or create a new one</div></div>`;
+  toast('Entry deleted');
+}
+
+// ── INIT ─────────────────────────────────────────────────────────────────────
+loadDailyPrompt();
+renderSections();
+</script>
+</body>
+</html>

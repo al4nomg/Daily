@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vision Board</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0e0b08;--surface:#181310;--surface2:#201a12;--surface3:#282218;
+  --border:#2e2318;--border2:#3e3228;
+  --text:#f0e8dc;--text2:#d4c8b8;--muted:#6a5a48;--muted2:#9a8a78;
+  --accent:#c4904f;--accent2:#e0b47a;--green:#7aaa88;--red:#c06060;--blue:#6a9aaa;--purple:#9a7aaa;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;min-height:100vh;padding:32px 20px 60px;position:relative;overflow-x:hidden;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:200;}
+.orb{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;}
+.o1{width:500px;height:500px;background:radial-gradient(circle,#c4904f,transparent);top:-150px;right:-120px;opacity:.07;animation:o1 18s ease-in-out infinite;}
+.o2{width:300px;height:300px;background:radial-gradient(circle,#9a7aaa,transparent);bottom:-60px;left:-60px;opacity:.05;animation:o2 22s ease-in-out infinite;}
+.o3{width:200px;height:200px;background:radial-gradient(circle,#6a9aaa,transparent);top:40%;left:5%;opacity:.04;animation:o3 26s ease-in-out infinite;}
+@keyframes o1{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,30px)}}
+@keyframes o2{0%,100%{transform:translate(0,0)}50%{transform:translate(25px,-30px)}}
+@keyframes o3{0%,100%{opacity:.04}50%{opacity:.07;transform:translate(15px,-20px)}}
+.app{max-width:920px;margin:0 auto;position:relative;z-index:1;animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);position:relative;}
+.header::after{content:'';position:absolute;bottom:-1px;left:0;height:1px;width:0;background:linear-gradient(to right,var(--accent),var(--accent2) 40%,transparent 70%);animation:lG 1s .2s forwards;}
+@keyframes lG{to{width:55%}}
+.title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--text);text-shadow:0 0 40px rgba(196,144,79,.2);}
+.subtitle{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.28em;color:var(--muted2);text-transform:uppercase;margin-top:3px;}
+
+/* YEAR PROGRESS */
+.year-bar{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:18px 22px;margin-bottom:20px;position:relative;overflow:hidden;}
+.year-bar::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--accent),var(--accent2),transparent);}
+.yb-top{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:12px;}
+.yb-label{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);letter-spacing:.04em;}
+.yb-pct{font-family:'Share Tech Mono',monospace;font-size:22px;color:var(--accent2);letter-spacing:.05em;text-shadow:0 0 15px rgba(224,180,122,.3);}
+.yb-track{height:3px;background:var(--border);border-radius:2px;overflow:hidden;}
+.yb-fill{height:100%;background:linear-gradient(to right,var(--accent),var(--accent2));border-radius:2px;position:relative;transition:width 1s cubic-bezier(.34,1.1,.64,1);}
+.yb-fill::after{content:'';position:absolute;right:0;top:0;bottom:0;width:20px;background:linear-gradient(to right,transparent,rgba(245,208,144,.5));animation:shimmer 2s ease-in-out infinite;}
+@keyframes shimmer{0%,100%{opacity:.5}50%{opacity:1}}
+.yb-days{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;color:var(--muted2);text-transform:uppercase;margin-top:8px;}
+
+/* AREAS GRID */
+.areas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
+@media(max-width:700px){.areas-grid{grid-template-columns:1fr 1fr;}}
+
+.area-card{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:18px;position:relative;overflow:hidden;transition:all .22s;cursor:pointer;animation:cardIn .4s cubic-bezier(.16,1,.3,1) both;}
+@keyframes cardIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
+.area-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,var(--accent));transition:opacity .2s;}
+.area-card::after{content:'';position:absolute;top:6px;left:6px;width:7px;height:7px;border-top:1px solid var(--ac,var(--accent));border-left:1px solid var(--ac,var(--accent));opacity:.3;}
+.area-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
+
+.area-icon{font-size:22px;margin-bottom:10px;}
+.area-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text);letter-spacing:.04em;margin-bottom:4px;}
+.area-desc{font-size:11px;color:var(--muted2);letter-spacing:.03em;line-height:1.4;margin-bottom:12px;}
+
+/* PROGRESS */
+.area-progress{margin-bottom:10px;}
+.ap-head{display:flex;justify-content:space-between;margin-bottom:5px;}
+.ap-label{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.15em;color:var(--muted2);text-transform:uppercase;}
+.ap-val{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--ac,var(--accent2));}
+.ap-track{height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
+.ap-fill{height:100%;border-radius:1px;transition:width .7s cubic-bezier(.34,1.1,.64,1);}
+
+/* GOALS LIST */
+.goals-list{display:flex;flex-direction:column;gap:4px;}
+.goal-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted2);letter-spacing:.02em;transition:color .2s;}
+.goal-row.done{color:var(--muted);text-decoration:line-through;opacity:.6;}
+.goal-check{width:12px;height:12px;border-radius:2px;border:1px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s cubic-bezier(.34,1.2,.64,1);}
+.goal-check.done{background:var(--ac,var(--accent));border-color:var(--ac,var(--accent));}
+.goal-check.done::after{content:'';width:6px;height:4px;border-left:1.5px solid #0e0b08;border-bottom:1.5px solid #0e0b08;transform:rotate(-45deg) translateY(-1px);}
+.goal-check:hover{transform:scale(1.15);}
+
+.area-add-goal{background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;transition:color .2s;padding:4px 0;text-align:left;}
+.area-add-goal:hover{color:var(--accent2);}
+
+/* MANIFESTATION */
+.manif-section{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:22px;position:relative;overflow:hidden;}
+.manif-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--purple),var(--blue),transparent);}
+.manif-section::after{content:'';position:absolute;top:6px;left:6px;width:8px;height:8px;border-top:1px solid var(--purple);border-left:1px solid var(--purple);opacity:.3;}
+.ms-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.22em;color:var(--muted2);text-transform:uppercase;margin-bottom:14px;}
+.manif-text{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:14px;color:var(--text2);font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:300;font-style:italic;letter-spacing:.04em;outline:none;resize:none;min-height:80px;transition:border-color .2s;line-height:1.7;}
+.manif-text:focus{border-color:var(--purple);}
+.manif-text::placeholder{color:var(--muted);}
+.ms-hint{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-top:8px;}
+
+/* WORD OF YEAR */
+.woy{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:22px;text-align:center;margin-bottom:12px;position:relative;overflow:hidden;cursor:pointer;}
+.woy::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--accent),transparent);}
+.woy-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.25em;color:var(--muted2);text-transform:uppercase;margin-bottom:10px;}
+.woy-word{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:600;color:var(--accent2);letter-spacing:.08em;text-shadow:0 0 40px rgba(224,180,122,.25);cursor:text;transition:all .2s;}
+.woy-word:empty::before{content:attr(data-placeholder);color:var(--muted);font-weight:300;font-style:italic;font-size:24px;}
+.woy-word:focus{outline:none;}
+
+/* SAVE BAR */
+.save-bar{display:flex;justify-content:flex-end;margin-top:14px;}
+.save-btn{background:none;border:1px solid var(--accent);border-radius:2px;padding:10px 24px;color:var(--accent2);cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;transition:all .22s;position:relative;overflow:hidden;}
+.save-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateX(-101%);transition:transform .3s cubic-bezier(.16,1,.3,1);z-index:0;}
+.save-btn:hover::before{transform:translateX(0);}
+.save-btn:hover{color:#0e0b08;}
+.save-btn span{position:relative;z-index:1;}
+
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(24px);background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:400;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div>
+<div class="toast" id="toast"></div>
+<div class="app">
+
+<div class="header">
+  <div>
+    <div class="title">Vision Board</div>
+    <div class="subtitle">goals · intentions · the life you're building</div>
+  </div>
+</div>
+
+<!-- YEAR PROGRESS -->
+<div class="year-bar" id="yearBar"></div>
+
+<!-- WORD OF YEAR -->
+<div class="woy">
+  <div class="woy-lbl">Word of the year</div>
+  <div class="woy-word" id="woyWord" contenteditable="true" data-placeholder="Your word..." spellcheck="false" oninput="scheduleSave()"></div>
+</div>
+
+<!-- AREAS GRID -->
+<div class="areas-grid" id="areasGrid"></div>
+
+<!-- MANIFESTATION -->
+<div class="manif-section">
+  <div class="ms-label">Manifestation — the life I am building</div>
+  <textarea class="manif-text" id="manifText" placeholder="Write in the present tense as if it's already true. I am... I have... I live..." oninput="scheduleSave()"></textarea>
+  <div class="ms-hint">Write as if it already exists · present tense · vivid detail</div>
+</div>
+
+<div class="save-bar">
+  <button class="save-btn" onclick="saveAll()"><span>Save Vision</span></button>
+</div>
+
+</div>
+<script>
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+
+// SVG icons for each area
+const AREA_ICONS = {
+  academic: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13"/><path d="M4 19a2 2 0 0 0 2 2h13V7H6a2 2 0 0 0-2 2"/><line x1="12" y1="2" x2="12" y2="22"/></svg>`,
+  career:   `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`,
+  health:   `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>`,
+  creative: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C14 4 6 10 4 20"/><path d="M20 4c-2 6-6 10-10 14"/><path d="M4 20l4-2-2-2"/></svg>`,
+  social:   `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  finance:  `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>`,
+};
+const AREAS=[
+  {id:'academic', name:'Academic', icon:'academic', desc:'Knowledge & university', col:'#c4904f'},
+  {id:'career',   name:'Career',   icon:'career',   desc:'Purpose & profession',  col:'#e0b47a'},
+  {id:'health',   name:'Health',   icon:'health',   desc:'Body & mind',           col:'#7aaa88'},
+  {id:'creative', name:'Creative', icon:'creative', desc:'Art & expression',      col:'#9a7aaa'},
+  {id:'social',   name:'Relationships', icon:'social', desc:'People & connections', col:'#6a9aaa'},
+  {id:'finance',  name:'Finance',  icon:'finance',  desc:'Wealth & freedom',      col:'#e0b47a'},
+];
+
+let visionData=JSON.parse(localStorage.getItem('vision-data')||'null');
+if(!visionData){
+  visionData={
+    woy:'Growth',
+    manif:'',
+    areas:{
+      academic:{progress:60,goals:[{text:'Complete all finals',done:false},{text:'Maintain GPA above 8',done:true}]},
+      career:{progress:20,goals:[{text:'Build portfolio',done:false}]},
+      health:{progress:40,goals:[{text:'Exercise 3x/week',done:false},{text:'Sleep 8 hours',done:false}]},
+      creative:{progress:30,goals:[{text:'Write daily',done:false}]},
+      social:{progress:50,goals:[{text:'Quality time with friends',done:true}]},
+      finance:{progress:15,goals:[{text:'Start investing',done:false}]},
+    }
+  };
+  save();
+}
+
+let saveTimer=null;
+function save(){localStorage.setItem('vision-data',JSON.stringify(visionData));}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2000);}
+function scheduleSave(){clearTimeout(saveTimer);saveTimer=setTimeout(saveAll,2000);}
+
+function saveAll(){
+  visionData.woy=$('woyWord').textContent.trim();
+  visionData.manif=$('manifText').value;
+  save();toast('Vision saved ✦');
+}
+
+// YEAR PROGRESS
+function renderYearBar(){
+  const now=new Date();
+  const start=new Date(now.getFullYear(),0,1);
+  const end=new Date(now.getFullYear()+1,0,1);
+  const pct=Math.round((now-start)/(end-start)*100);
+  const daysLeft=Math.round((end-now)/86400000);
+  $('yearBar').innerHTML=`
+    <div class="yb-top">
+      <span class="yb-label">${now.getFullYear()} — per aspera ad astra</span>
+      <span class="yb-pct">${pct}%</span>
+    </div>
+    <div class="yb-track"><div class="yb-fill" style="width:${pct}%"></div></div>
+    <div class="yb-days">${daysLeft} days remaining · ${365-daysLeft} days elapsed</div>`;
+}
+
+function renderAreas(){
+  $('areasGrid').innerHTML=AREAS.map((a,i)=>{
+    const aData=visionData.areas[a.id]||{progress:0,goals:[]};
+    const goals=aData.goals||[];
+    const done=goals.filter(g=>g.done).length;
+    const total=goals.length;
+    const pct=total?Math.round(done/total*100):aData.progress;
+    return `<div class="area-card" style="--ac:${a.col};animation-delay:${i*.06}s">
+      <div class="area-icon" style="color:var(--ac,var(--accent));width:24px;height:24px">${AREA_ICONS[a.icon]||a.icon}</div>
+      <div class="area-name">${a.name}</div>
+      <div class="area-desc">${a.desc}</div>
+      <div class="area-progress">
+        <div class="ap-head">
+          <span class="ap-label">Progress</span>
+          <span class="ap-val">${pct}%</span>
+        </div>
+        <div class="ap-track"><div class="ap-fill" style="width:${pct}%;background:${a.col}"></div></div>
+      </div>
+      <div class="goals-list" id="goals_${a.id}">
+        ${goals.map((g,gi)=>`<div class="goal-row${g.done?' done':''}">
+          <div class="goal-check${g.done?' done':''}" style="${g.done?`background:${a.col};border-color:${a.col}`:''}" onclick="toggleGoal('${a.id}',${gi})"></div>
+          <span>${g.text}</span>
+        </div>`).join('')}
+      </div>
+      <button class="area-add-goal" onclick="addGoal('${a.id}')">+ Add goal</button>
+    </div>`;
+  }).join('');
+}
+
+function toggleGoal(areaId,gi){
+  if(!visionData.areas[areaId]) return;
+  visionData.areas[areaId].goals[gi].done=!visionData.areas[areaId].goals[gi].done;
+  save();renderAreas();
+}
+
+function addGoal(areaId){
+  const text=prompt('New goal:');
+  if(!text) return;
+  if(!visionData.areas[areaId]) visionData.areas[areaId]={progress:0,goals:[]};
+  visionData.areas[areaId].goals.push({text,done:false});
+  save();renderAreas();toast('Goal added ✦');
+}
+
+function render(){
+  renderYearBar();
+  $('woyWord').textContent=visionData.woy||'';
+  $('manifText').value=visionData.manif||'';
+  renderAreas();
+}
+
+render();
+</script>
+</body>
+</html>

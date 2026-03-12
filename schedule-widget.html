@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schedule</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300&family=Inter:wght@300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0e0b08;--surface:#181310;--surface2:#201a12;--surface3:#282218;
+  --border:#2e2318;--border2:#3e3228;
+  --text:#f0e8dc;--text2:#d4c8b8;--muted:#6a5a48;--muted2:#9a8a78;
+  --accent:#c4904f;--accent2:#e0b47a;--green:#7aaa88;--red:#c06060;--blue:#6a9aaa;--purple:#9a7aaa;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;
+  min-height:100vh;padding:32px 20px 60px;overflow-x:hidden;position:relative;}
+body::after{content:'';position:fixed;inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);
+  pointer-events:none;z-index:200;}
+.orb{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;}
+.o1{width:500px;height:500px;background:radial-gradient(circle,#c4904f,transparent);top:-150px;right:-120px;opacity:.07;animation:o1 18s ease-in-out infinite;}
+.o2{width:280px;height:280px;background:radial-gradient(circle,#6a9aaa,transparent);bottom:-60px;left:-60px;opacity:.05;animation:o2 22s ease-in-out infinite;}
+@keyframes o1{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,30px)}}
+@keyframes o2{0%,100%{transform:translate(0,0)}50%{transform:translate(25px,-30px)}}
+
+.app{max-width:900px;margin:0 auto;position:relative;z-index:1;animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;padding-bottom:16px;border-bottom:1px solid var(--border);position:relative;}
+.header::after{content:'';position:absolute;bottom:-1px;left:0;height:1px;width:0;background:linear-gradient(to right,var(--accent),var(--accent2) 40%,transparent 70%);animation:lineGrow 1s .2s forwards;}
+@keyframes lineGrow{to{width:55%}}
+.title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--text);text-shadow:0 0 40px rgba(196,144,79,.2);}
+.subtitle{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.28em;color:var(--muted2);text-transform:uppercase;margin-top:3px;}
+
+/* WEEK NAV */
+.week-nav{display:flex;align-items:center;gap:12px;margin-bottom:20px;}
+.nav-btn{background:none;border:1px solid var(--border2);border-radius:2px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--muted2);cursor:pointer;transition:all .2s;}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.nav-btn:active{transform:scale(.92);}
+.week-label{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);letter-spacing:.05em;}
+.week-sub{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--muted2);}
+.btn-today{background:none;border:1px solid var(--border2);border-radius:2px;padding:7px 12px;color:var(--muted2);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;transition:all .2s;margin-left:auto;}
+.btn-today:hover{border-color:var(--accent);color:var(--accent2);}
+
+/* LEGEND */
+.legend{display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.legend-item{display:flex;align-items:center;gap:5px;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.12em;color:var(--muted2);text-transform:uppercase;cursor:pointer;}
+.legend-dot{width:8px;height:8px;border-radius:50%;}
+
+/* GRID */
+.grid-wrap{overflow-x:auto;}
+.sched-grid{display:grid;grid-template-columns:52px repeat(7,1fr);min-width:700px;border:1px solid var(--border);border-radius:2px;overflow:hidden;}
+
+.time-col{background:var(--surface2);}
+.day-col{position:relative;border-left:1px solid var(--border);}
+.day-col.today{background:rgba(196,144,79,.02);}
+
+.grid-head{padding:10px 8px;background:var(--surface2);border-bottom:1px solid var(--border);text-align:center;position:sticky;top:0;z-index:5;}
+.time-head{background:var(--surface2);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:center;}
+.day-name{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--muted2);text-transform:uppercase;margin-bottom:2px;}
+.day-num{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text2);line-height:1;}
+.day-col.today .day-num{color:var(--accent2);text-shadow:0 0 12px rgba(224,180,122,.4);}
+.day-col.today .day-name{color:var(--accent);}
+
+.time-slot{height:48px;border-bottom:1px solid rgba(46,35,24,.5);background:var(--surface2);display:flex;align-items:flex-start;padding:4px 6px;}
+.time-lbl{font-family:'Share Tech Mono',monospace;font-size:7px;color:var(--muted);letter-spacing:.08em;white-space:nowrap;}
+.event-slot{height:48px;border-bottom:1px solid rgba(46,35,24,.4);position:relative;cursor:pointer;transition:background .15s;}
+.event-slot:hover{background:rgba(196,144,79,.04);}
+
+.ev-block{position:absolute;left:2px;right:2px;border-radius:1px;padding:2px 5px;cursor:pointer;overflow:hidden;transition:all .18s;border-left:2px solid transparent;}
+.ev-block:hover{filter:brightness(1.15);transform:translateX(1px);z-index:2;}
+.ev-title{font-size:9px;font-weight:400;letter-spacing:.03em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3;}
+.ev-time{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.08em;opacity:.7;}
+
+/* CURRENT TIME LINE */
+.now-line{position:absolute;left:0;right:0;height:1px;background:var(--accent);z-index:3;pointer-events:none;}
+.now-dot{position:absolute;left:-3px;top:-3px;width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 6px var(--accent);animation:dotGlow 2s ease-in-out infinite;}
+@keyframes dotGlow{0%,100%{box-shadow:0 0 6px var(--accent)}50%{box-shadow:0 0 12px var(--accent2)}}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(6,4,2,.9);backdrop-filter:blur(8px);z-index:100;display:none;align-items:center;justify-content:center;}
+.overlay.open{display:flex;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.modal{width:380px;background:var(--surface);border:1px solid var(--border2);padding:28px;position:relative;animation:modalIn .35s cubic-bezier(.16,1,.3,1);box-shadow:0 32px 80px rgba(0,0,0,.8),0 0 60px rgba(196,144,79,.06);}
+.modal-bar{position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--accent),var(--accent2),transparent);animation:barSlide .5s cubic-bezier(.16,1,.3,1);}
+@keyframes barSlide{from{transform:scaleX(0);transform-origin:left}to{transform:scaleX(1)}}
+@keyframes modalIn{from{opacity:0;transform:translateY(-12px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal::before{content:'';position:absolute;top:7px;left:7px;width:9px;height:9px;border-top:1px solid var(--accent);border-left:1px solid var(--accent);opacity:.4;}
+.modal::after{content:'';position:absolute;bottom:7px;right:7px;width:9px;height:9px;border-bottom:1px solid var(--accent);border-right:1px solid var(--accent);opacity:.4;}
+.m-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:600;color:var(--text);margin-bottom:18px;}
+.m-field{margin-bottom:13px;}
+.m-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.25em;text-transform:uppercase;color:var(--muted2);margin-bottom:6px;display:block;}
+.m-input{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:9px 12px;color:var(--text);font-family:'Inter',sans-serif;font-size:12px;font-weight:300;letter-spacing:.04em;outline:none;transition:border-color .2s,box-shadow .2s;}
+.m-input:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(196,144,79,.1);}
+.m-input::placeholder{color:var(--muted);}
+.m-row{display:flex;gap:10px;}.m-row .m-field{flex:1;}
+.color-row{display:flex;gap:7px;}
+.col-swatch{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:all .2s;}
+.col-swatch.sel{border-color:var(--text);transform:scale(1.2);}
+.col-swatch:hover{transform:scale(1.1);}
+.m-btns{display:flex;gap:8px;margin-top:18px;}
+.btn-c{flex:1;background:none;border:1px solid var(--border);border-radius:2px;padding:9px;color:var(--muted2);cursor:pointer;font-family:'Inter',sans-serif;font-size:9px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;transition:all .2s;}
+.btn-c:hover{border-color:var(--border2);color:var(--text);}
+.btn-s{flex:2;background:none;border:1px solid var(--accent);border-radius:2px;padding:9px;color:var(--accent2);cursor:pointer;font-family:'Inter',sans-serif;font-size:9px;font-weight:500;letter-spacing:.2em;text-transform:uppercase;transition:all .22s;position:relative;overflow:hidden;}
+.btn-s::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateX(-101%);transition:transform .25s cubic-bezier(.16,1,.3,1);z-index:0;}
+.btn-s:hover::before{transform:translateX(0);}
+.btn-s:hover{color:#0e0b08;}
+.btn-s span{position:relative;z-index:1;}
+.btn-del{background:none;border:1px solid rgba(192,96,96,.3);border-radius:2px;padding:9px;color:var(--red);cursor:pointer;font-family:'Inter',sans-serif;font-size:9px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;transition:all .2s;}
+.btn-del:hover{background:rgba(192,96,96,.1);border-color:var(--red);}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(24px);background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:400;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<div class="toast" id="toast"></div>
+
+<div class="overlay" id="overlay" onclick="closeOut(event)">
+<div class="modal">
+  <div class="modal-bar"></div>
+  <div class="m-title" id="mTitle">New Event</div>
+  <div class="m-field">
+    <label class="m-label">Title</label>
+    <input class="m-input" id="mName" placeholder="e.g. Philosophy lecture" maxlength="50" onkeydown="if(event.key==='Enter')saveEv()">
+  </div>
+  <div class="m-row">
+    <div class="m-field"><label class="m-label">Date</label>
+      <input class="m-input" id="mDate" type="date"></div>
+    <div class="m-field"><label class="m-label">Start</label>
+      <input class="m-input" id="mStart" type="time" value="09:00"></div>
+    <div class="m-field"><label class="m-label">End</label>
+      <input class="m-input" id="mEnd" type="time" value="10:00"></div>
+  </div>
+  <div class="m-field">
+    <label class="m-label">Color</label>
+    <div class="color-row" id="colorRow"></div>
+  </div>
+  <div class="m-field">
+    <label class="m-label">Note</label>
+    <input class="m-input" id="mNote" placeholder="Room, professor, link..." maxlength="60">
+  </div>
+  <div class="m-btns" id="mBtns"></div>
+</div>
+</div>
+
+<div class="app">
+  <div class="header">
+    <div>
+      <div class="title">Weekly Schedule</div>
+      <div class="subtitle">study planner · horario semanal</div>
+    </div>
+    <button style="background:none;border:1px solid var(--accent);border-radius:2px;padding:9px 16px;color:var(--accent2);cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;transition:all .22s" onclick="openNew()">+ Add Block</button>
+  </div>
+
+  <div class="week-nav">
+    <button class="nav-btn" onclick="weekNav(-1)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+    </button>
+    <div>
+      <div class="week-label" id="weekLabel"></div>
+      <div class="week-sub" id="weekSub"></div>
+    </div>
+    <button class="nav-btn" onclick="weekNav(1)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9,18 15,12 9,6"/></svg>
+    </button>
+    <button class="btn-today" onclick="goToday()">Today</button>
+  </div>
+
+  <div class="grid-wrap">
+    <div class="sched-grid" id="grid"></div>
+  </div>
+</div>
+
+<script>
+const DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const MONTHS=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const COLORS=['#c4904f','#e0b47a','#7aaa88','#6a9aaa','#9a7aaa','#b07878','#8aaa7a','#c06060'];
+const HOURS=Array.from({length:16},(_,i)=>i+7); // 7am-10pm
+
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const dateKey=d=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+// Migrate old events that used day:0-6 to date-based
+// We use a new storage key 'sched-ev2' so old data doesn't interfere
+let events=JSON.parse(localStorage.getItem('sched-ev2')||'null');
+if(!events){
+  // Build default events anchored to actual upcoming dates
+  const getNextDow=(dow)=>{
+    const d=new Date(); d.setHours(0,0,0,0);
+    const diff=(dow-d.getDay()+7)%7;
+    d.setDate(d.getDate()+(diff===0?7:diff)); // next occurrence (not today if same dow)
+    return d;
+  };
+  const mon=getNextDow(1), tue=getNextDow(2), wed=getNextDow(3), thu=getNextDow(4);
+  events=[
+    {id:'e1',title:'Philosophy Lecture',date:dateKey(mon),start:'09:00',end:'11:00',color:'#c4904f',note:'Room 204'},
+    {id:'e2',title:'Literature Seminar',date:dateKey(wed),start:'14:00',end:'16:00',color:'#7aaa88',note:'Library Hall'},
+    {id:'e3',title:'Study Block',date:dateKey(mon),start:'14:00',end:'16:00',color:'#6a9aaa',note:'Self-study'},
+    {id:'e4',title:'History',date:dateKey(thu),start:'10:00',end:'12:00',color:'#9a7aaa',note:''},
+    {id:'e5',title:'Study Block',date:dateKey(tue),start:'08:00',end:'10:00',color:'#6a9aaa',note:''},
+  ];
+  save();
+}
+
+let weekOffset=0, editId=null, selColor=COLORS[0];
+// Store the date being added (YYYY-MM-DD) when clicking a slot
+let pendingDate=null;
+
+function save(){localStorage.setItem('sched-ev2',JSON.stringify(events));}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2000);}
+
+function getWeekStart(){
+  const d=new Date(); d.setHours(0,0,0,0);
+  d.setDate(d.getDate()-d.getDay()+weekOffset*7);
+  return d;
+}
+function weekNav(d){weekOffset+=d;render();}
+function goToday(){weekOffset=0;render();}
+
+function render(){
+  const ws=getWeekStart();
+  const we=new Date(ws); we.setDate(we.getDate()+6);
+  $('weekLabel').textContent=`${ws.getDate()} ${MONTHS[ws.getMonth()]} — ${we.getDate()} ${MONTHS[we.getMonth()]} ${we.getFullYear()}`;
+  $('weekSub').textContent=`Week ${getWeekNumber(ws)}`;
+
+  const nowH=new Date().getHours(), nowM=new Date().getMinutes();
+
+  const cols=Array.from({length:7},(_,i)=>{
+    const d=new Date(ws); d.setDate(ws.getDate()+i); return d;
+  });
+
+  let html=`<div class="time-col"><div class="time-head"></div>`;
+  HOURS.forEach(h=>html+=`<div class="time-slot"><span class="time-lbl">${pad(h)}:00</span></div>`);
+  html+=`</div>`;
+
+  cols.forEach((date)=>{
+    const dow=date.getDay();
+    const isT=date.toDateString()===new Date().toDateString();
+    const dk=dateKey(date);
+    html+=`<div class="day-col${isT?' today':''}">
+      <div class="grid-head">
+        <div class="day-name">${DAYS[dow]}</div>
+        <div class="day-num">${date.getDate()}</div>
+      </div>`;
+
+    HOURS.forEach(h=>{
+      // Filter by exact date AND start hour
+      const slotEvs=events.filter(e=>e.date===dk && parseInt(e.start)===h);
+      const evHTML=slotEvs.map(ev=>{
+        const [sh,sm]=ev.start.split(':').map(Number);
+        const [eh,em]=ev.end.split(':').map(Number);
+        const dur=(eh*60+em)-(sh*60+sm);
+        const h_span=dur/60;
+        return `<div class="ev-block" style="background:${ev.color}22;border-left-color:${ev.color};color:${ev.color};height:${Math.max(h_span*48-4,20)}px;top:2px"
+          onclick="event.stopPropagation();openEdit('${ev.id}')">
+          <div class="ev-title">${ev.title}</div>
+          <div class="ev-time">${ev.start}–${ev.end}</div>
+        </div>`;
+      }).join('');
+      html+=`<div class="event-slot" onclick="openNewSlot('${dk}','${pad(h)}:00')" style="position:relative">${evHTML}</div>`;
+    });
+
+    if(isT&&nowH>=7&&nowH<=22){
+      const pct=((nowH-7)*60+nowM)/(16*60)*100;
+      html+=`<div class="now-line" style="top:${52+pct/100*(HOURS.length*48)}px"><div class="now-dot"></div></div>`;
+    }
+    html+=`</div>`;
+  });
+
+  $('grid').innerHTML=html;
+}
+
+function getWeekNumber(d){
+  const start=new Date(d.getFullYear(),0,1);
+  return Math.ceil((((d-start)/86400000)+start.getDay()+1)/7);
+}
+
+// MODAL
+function renderColors(){
+  $('colorRow').innerHTML=COLORS.map(c=>`<div class="col-swatch${c===selColor?' sel':''}" style="background:${c}" onclick="selColor='${c}';renderColors()"></div>`).join('');
+}
+
+function openNew(){
+  // Default to today or first visible day
+  const ws=getWeekStart();
+  pendingDate=dateKey(ws);
+  editId=null; selColor=COLORS[0];
+  $('mTitle').textContent='New Block';
+  $('mName').value='';
+  $('mDate').value=pendingDate;
+  $('mStart').value='09:00'; $('mEnd').value='10:00';
+  $('mNote').value='';
+  $('mBtns').innerHTML=`<button class="btn-c" onclick="closeModal()">Cancel</button><button class="btn-s" onclick="saveEv()"><span>Save Block</span></button>`;
+  renderColors(); $('overlay').classList.add('open');
+  setTimeout(()=>$('mName').focus(),100);
+}
+
+function openNewSlot(dk, time){
+  pendingDate=dk; editId=null; selColor=COLORS[0];
+  $('mTitle').textContent='New Block';
+  $('mName').value='';
+  $('mDate').value=dk;
+  $('mStart').value=time; $('mEnd').value=`${pad(parseInt(time)+1)}:00`;
+  $('mNote').value='';
+  $('mBtns').innerHTML=`<button class="btn-c" onclick="closeModal()">Cancel</button><button class="btn-s" onclick="saveEv()"><span>Save Block</span></button>`;
+  renderColors(); $('overlay').classList.add('open');
+  setTimeout(()=>$('mName').focus(),100);
+}
+
+function openEdit(id){
+  const ev=events.find(e=>e.id===id); if(!ev)return;
+  editId=id; selColor=ev.color; pendingDate=ev.date;
+  $('mTitle').textContent='Edit Block';
+  $('mName').value=ev.title;
+  $('mDate').value=ev.date;
+  $('mStart').value=ev.start; $('mEnd').value=ev.end;
+  $('mNote').value=ev.note||'';
+  $('mBtns').innerHTML=`<button class="btn-del" onclick="delEv('${id}')">Delete</button><button class="btn-c" onclick="closeModal()">Cancel</button><button class="btn-s" onclick="saveEv()"><span>Update</span></button>`;
+  renderColors(); $('overlay').classList.add('open');
+  setTimeout(()=>$('mName').focus(),100);
+}
+
+function saveEv(){
+  const title=$('mName').value.trim();
+  if(!title){$('mName').style.borderColor='var(--red)';setTimeout(()=>$('mName').style.borderColor='',500);return;}
+  const evDate=$('mDate').value || pendingDate;
+  if(editId){
+    const ev=events.find(e=>e.id===editId);
+    Object.assign(ev,{title,date:evDate,start:$('mStart').value,end:$('mEnd').value,color:selColor,note:$('mNote').value});
+    toast('Block updated ✦');
+  } else {
+    events.push({id:'e'+Date.now(),title,date:evDate,start:$('mStart').value,end:$('mEnd').value,color:selColor,note:$('mNote').value});
+    toast('Block added ✦');
+  }
+  save(); closeModal(); render();
+}
+function delEv(id){events=events.filter(e=>e.id!==id);save();closeModal();render();toast('Block removed');}
+function closeModal(){$('overlay').classList.remove('open');}
+function closeOut(e){if(e.target===$('overlay'))closeModal();}
+
+render();
+setInterval(render,60000);
+</script>
+</body>
+</html>

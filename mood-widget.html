@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mood Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Inter:wght@300;400;500&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+:root{
+  --bg:#0e0b08;--surface:#181310;--surface2:#201a12;--surface3:#282218;
+  --border:#2e2318;--border2:#3e3228;
+  --text:#f0e8dc;--text2:#d4c8b8;--muted:#6a5a48;--muted2:#9a8a78;
+  --accent:#c4904f;--accent2:#e0b47a;
+}
+body{background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;font-weight:300;
+  min-height:100vh;padding:32px 20px 60px;overflow-x:hidden;position:relative;}
+body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,.025) 3px,rgba(0,0,0,.025) 4px);pointer-events:none;z-index:200;}
+.orb{position:fixed;border-radius:50%;filter:blur(110px);pointer-events:none;}
+.o1{width:450px;height:450px;background:radial-gradient(circle,#c4904f,transparent);top:-100px;right:-100px;opacity:.07;animation:o1 18s ease-in-out infinite;}
+.o2{width:280px;height:280px;background:radial-gradient(circle,#9a7aaa,transparent);bottom:-60px;left:-60px;opacity:.05;animation:o2 22s ease-in-out infinite;}
+@keyframes o1{0%,100%{transform:translate(0,0)}50%{transform:translate(-20px,30px)}}
+@keyframes o2{0%,100%{transform:translate(0,0)}50%{transform:translate(25px,-30px)}}
+
+.app{max-width:760px;margin:0 auto;position:relative;z-index:1;animation:fadeUp .6s cubic-bezier(.16,1,.3,1) forwards;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:28px;padding-bottom:16px;border-bottom:1px solid var(--border);position:relative;}
+.header::after{content:'';position:absolute;bottom:-1px;left:0;height:1px;width:0;background:linear-gradient(to right,var(--accent),var(--accent2) 40%,transparent 70%);animation:lineGrow 1s .2s forwards;}
+@keyframes lineGrow{to{width:55%}}
+.title{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:600;color:var(--text);text-shadow:0 0 40px rgba(196,144,79,.2);}
+.subtitle{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.28em;color:var(--muted2);text-transform:uppercase;margin-top:3px;}
+
+/* DATE NAV */
+.date-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
+.nav-btn{background:none;border:1px solid var(--border2);border-radius:2px;width:32px;height:32px;display:flex;align-items:center;justify-content:center;color:var(--muted2);cursor:pointer;transition:all .2s;}
+.nav-btn:hover{border-color:var(--accent);color:var(--accent2);}
+.nav-btn:active{transform:scale(.92);}
+.date-display{text-align:center;}
+.date-big{font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:600;color:var(--text);letter-spacing:.04em;}
+.date-sub{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.2em;color:var(--muted2);text-transform:uppercase;margin-top:2px;}
+.btn-today{background:none;border:none;color:var(--accent2);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;transition:opacity .2s;}
+.btn-today:hover{opacity:.7;}
+
+/* MOOD PICKER */
+.mood-section{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:22px;margin-bottom:16px;position:relative;overflow:hidden;}
+.mood-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--accent),var(--accent2),transparent);}
+.mood-section::after{content:'';position:absolute;top:6px;left:6px;width:8px;height:8px;border-top:1px solid var(--accent);border-left:1px solid var(--accent);opacity:.3;}
+.section-title{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.25em;color:var(--muted2);text-transform:uppercase;margin-bottom:16px;}
+
+.mood-grid{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px;}
+.mood-opt{display:flex;flex-direction:column;align-items:center;gap:4px;cursor:pointer;padding:10px 14px;border:1px solid var(--border);border-radius:2px;transition:all .22s cubic-bezier(.34,1.2,.64,1);position:relative;overflow:hidden;flex:1;min-width:70px;}
+.mood-opt::before{content:'';position:absolute;inset:0;background:var(--mopt-bg,rgba(196,144,79,.08));opacity:0;transition:opacity .2s;}
+.mood-opt:hover::before,.mood-opt.sel::before{opacity:1;}
+.mood-opt.sel{border-color:var(--mopt-col,var(--accent));transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.3);}
+.mood-icon{font-size:22px;transition:transform .25s cubic-bezier(.34,1.56,.64,1);position:relative;z-index:1;}
+.mood-opt:hover .mood-icon,.mood-opt.sel .mood-icon{transform:scale(1.2);}
+.mood-label{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;color:var(--muted2);text-transform:uppercase;position:relative;z-index:1;transition:color .2s;}
+.mood-opt.sel .mood-label{color:var(--mopt-col,var(--accent2));}
+
+/* ENERGY SLIDER */
+.energy-row{display:flex;align-items:center;gap:14px;margin-bottom:4px;}
+.energy-label{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;color:var(--muted2);text-transform:uppercase;min-width:56px;}
+.energy-val{font-family:'Share Tech Mono',monospace;font-size:14px;color:var(--accent2);letter-spacing:.05em;min-width:24px;text-align:right;}
+.slider-track{flex:1;height:3px;background:var(--border);border-radius:2px;position:relative;cursor:pointer;}
+.slider-fill{height:100%;background:linear-gradient(to right,var(--accent),var(--accent2));border-radius:2px;transition:width .2s;}
+.slider-thumb{position:absolute;top:50%;width:12px;height:12px;border-radius:50%;background:var(--accent2);border:2px solid var(--bg);transform:translate(-50%,-50%);cursor:grab;box-shadow:0 0 8px rgba(224,180,122,.4);transition:box-shadow .2s;}
+.slider-thumb:active{cursor:grabbing;box-shadow:0 0 14px rgba(224,180,122,.6);}
+input[type=range]{-webkit-appearance:none;width:100%;height:3px;background:linear-gradient(to right,var(--accent) var(--pct,50%),var(--border) var(--pct,50%));border-radius:2px;outline:none;cursor:pointer;}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--accent2);border:2px solid var(--bg);box-shadow:0 0 8px rgba(224,180,122,.4);cursor:grab;}
+
+/* NOTE */
+.note-area{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:12px 14px;color:var(--text);font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:300;font-style:italic;letter-spacing:.03em;outline:none;resize:vertical;min-height:90px;transition:border-color .2s,box-shadow .2s;line-height:1.6;}
+.note-area:focus{border-color:var(--accent);box-shadow:0 0 0 2px rgba(196,144,79,.1);}
+.note-area::placeholder{color:var(--muted);}
+
+/* SAVE BTN */
+.save-btn{width:100%;background:none;border:1px solid var(--accent);border-radius:2px;padding:11px;color:var(--accent2);cursor:pointer;font-family:'Inter',sans-serif;font-size:10px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;transition:all .22s;position:relative;overflow:hidden;margin-top:14px;}
+.save-btn::before{content:'';position:absolute;inset:0;background:linear-gradient(135deg,var(--accent),var(--accent2));transform:translateX(-101%);transition:transform .3s cubic-bezier(.16,1,.3,1);z-index:0;}
+.save-btn:hover::before{transform:translateX(0);}
+.save-btn:hover{color:#0e0b08;box-shadow:0 0 20px rgba(196,144,79,.25);}
+.save-btn span{position:relative;z-index:1;}
+
+/* MONTH MAP */
+.month-section{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:20px;margin-top:16px;position:relative;overflow:hidden;}
+.month-section::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,var(--accent),transparent 60%);}
+.month-section::after{content:'';position:absolute;top:6px;left:6px;width:8px;height:8px;border-top:1px solid var(--accent);border-left:1px solid var(--accent);opacity:.3;}
+.month-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.month-title{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:600;color:var(--text);letter-spacing:.04em;}
+.month-sub{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.2em;color:var(--muted2);text-transform:uppercase;}
+.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;}
+.month-day-head{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:.1em;color:var(--muted);text-align:center;padding:3px 0;text-transform:uppercase;}
+.month-cell{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:2px;cursor:pointer;position:relative;border:1px solid transparent;transition:all .18s;font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted2);}
+.month-cell:hover{border-color:var(--border2);}
+.month-cell.has-entry{border-color:transparent;}
+.month-cell.today{border-color:var(--accent);color:var(--accent2);}
+.month-cell.other{opacity:.25;}
+
+/* TOAST */
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(24px);background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:400;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+</style>
+</head>
+<body>
+<div class="orb o1"></div><div class="orb o2"></div>
+<div class="toast" id="toast"></div>
+<div class="app">
+
+<div class="header">
+  <div>
+    <div class="title">Mood Journal</div>
+    <div class="subtitle">daily reflection · emotional log</div>
+  </div>
+  <button class="btn-today" onclick="goToday()">← Today</button>
+</div>
+
+<div class="date-nav">
+  <button class="nav-btn" onclick="navDay(-1)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="15,18 9,12 15,6"/></svg>
+  </button>
+  <div class="date-display">
+    <div class="date-big" id="dateBig"></div>
+    <div class="date-sub" id="dateSub"></div>
+  </div>
+  <button class="nav-btn" onclick="navDay(1)">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="9,18 15,12 9,6"/></svg>
+  </button>
+</div>
+
+<div class="mood-section">
+  <div class="section-title">How are you feeling?</div>
+  <div class="mood-grid" id="moodGrid"></div>
+  <div class="section-title" style="margin-bottom:10px">Energy level</div>
+  <div class="energy-row">
+    <span class="energy-label">Low</span>
+    <input type="range" id="energySlider" min="1" max="10" value="5" oninput="updateEnergy(this.value)">
+    <span class="energy-label" style="text-align:right">High</span>
+    <span class="energy-val" id="energyVal">5</span>
+  </div>
+  <div class="section-title" style="margin-bottom:10px;margin-top:18px">Reflection</div>
+  <textarea class="note-area" id="noteArea" placeholder="What shaped today? What are you grateful for? What's weighing on you..."></textarea>
+  <button class="save-btn" onclick="saveEntry()"><span>Save Entry</span></button>
+</div>
+
+<div class="month-section">
+  <div class="month-header">
+    <div class="month-title" id="mapTitle"></div>
+    <div class="month-sub">mood map</div>
+  </div>
+  <div class="month-grid" id="mapGrid"></div>
+</div>
+
+</div>
+<script>
+const MOOD_ICONS = {
+  great: `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>`,
+  good:  `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`,
+  ok:    `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  low:   `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="8" y2="2"/><line x1="16" y1="6" x2="16" y2="2"/><path d="M2 12h20"/><path d="M20 16a8 8 0 0 1-16 0"/><line x1="8" y1="16" x2="8" y2="20"/><line x1="16" y1="16" x2="16" y2="20"/></svg>`,
+  hard:  `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M14.28 6.72L21 12l-6.72 5.28"/><path d="M3 12h18"/><path d="M3 6l4 6-4 6"/></svg>`,
+};
+const MOODS=[
+  {id:'great', icon:'great', label:'Excelente', col:'#e0b47a', bg:'rgba(224,180,122,.1)'},
+  {id:'good',  icon:'good',  label:'Bien',      col:'#7aaa88', bg:'rgba(122,170,136,.1)'},
+  {id:'ok',    icon:'ok',    label:'Regular',   col:'#6a9aaa', bg:'rgba(106,154,170,.1)'},
+  {id:'low',   icon:'low',   label:'Bajo',      col:'#9a7aaa', bg:'rgba(154,122,170,.1)'},
+  {id:'hard',  icon:'hard',  label:'Difícil',   col:'#c06060', bg:'rgba(192,96,96,.1)'},
+];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const DAYS_S=['S','M','T','W','T','F','S'];
+const $=id=>document.getElementById(id);
+const pad=n=>String(n).padStart(2,'0');
+const dKey=(d)=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+
+let entries=JSON.parse(localStorage.getItem('mood-entries')||'{}');
+let curDate=new Date(); curDate.setHours(0,0,0,0);
+let selMood=null;
+let lastLoadedKey=null;
+
+function save(){localStorage.setItem('mood-entries',JSON.stringify(entries));}
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2000);}
+
+function goToday(){curDate=new Date();curDate.setHours(0,0,0,0);loadDay();}
+function navDay(d){curDate.setDate(curDate.getDate()+d);loadDay();}
+
+function updateEnergy(v){
+  $('energyVal').textContent=v;
+  const pct=(v-1)/9*100;
+  $('energySlider').style.setProperty('--pct',pct+'%');
+}
+
+// loadDay: called when date changes — reloads entry data and resets selMood
+function loadDay(){
+  const ck=dKey(curDate);
+  lastLoadedKey=ck;
+  const entry=entries[ck]||null;
+  selMood=entry?.mood||null;
+  const energy=entry?.energy||5;
+  $('energySlider').value=energy;
+  updateEnergy(energy);
+  $('noteArea').value=entry?.note||'';
+  renderAll();
+}
+
+// render: only redraws UI — never touches selMood or form values
+function render(){
+  renderAll();
+}
+
+function renderAll(){
+  const tk=dKey(new Date());
+  const ck=dKey(curDate);
+  const isToday=ck===tk;
+  $('dateBig').textContent=`${curDate.getDate()} ${MONTHS[curDate.getMonth()].slice(0,3)} ${curDate.getFullYear()}`;
+  $('dateSub').textContent=isToday?'Today — per aspera ad astra':['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][curDate.getDay()];
+
+  // Mood grid — uses selMood state, does NOT reset it
+  $('moodGrid').innerHTML=MOODS.map(m=>`
+    <div class="mood-opt ${selMood===m.id?'sel':''}" style="--mopt-col:${m.col};--mopt-bg:${m.bg}" onclick="selectMood('${m.id}')">
+      <span class="mood-icon" style="color:var(--mopt-col,var(--accent));display:flex;align-items:center;justify-content:center">${MOOD_ICONS[m.icon]||m.icon}</span>
+      <span class="mood-label">${m.label}</span>
+    </div>`).join('');
+
+  renderMap();
+}
+
+function selectMood(id){
+  selMood=id;
+  // Only re-render the mood grid, not the whole page (avoids losing energy/note values)
+  $('moodGrid').querySelectorAll('.mood-opt').forEach(el=>{
+    const mid=el.onclick?.toString().match(/'(\w+)'/)?.[1];
+    el.classList.toggle('sel', mid===id);
+  });
+  // Simpler: just re-render mood grid portion
+  $('moodGrid').innerHTML=MOODS.map(m=>`
+    <div class="mood-opt ${selMood===m.id?'sel':''}" style="--mopt-col:${m.col};--mopt-bg:${m.bg}" onclick="selectMood('${m.id}')">
+      <span class="mood-icon" style="color:var(--mopt-col,var(--accent));display:flex;align-items:center;justify-content:center">${MOOD_ICONS[m.icon]||m.icon}</span>
+      <span class="mood-label">${m.label}</span>
+    </div>`).join('');
+}
+
+function saveEntry(){
+  const k=dKey(curDate);
+  if(!selMood){
+    $('moodGrid').style.boxShadow='0 0 0 2px var(--red)';
+    setTimeout(()=>$('moodGrid').style.boxShadow='',600);
+    toast('Elegí un estado de ánimo primero');
+    return;
+  }
+  entries[k]={mood:selMood,energy:parseInt($('energySlider').value),note:$('noteArea').value.trim()};
+  save();renderMap();toast('Entry saved ✦');
+}
+
+function renderMap(){
+  const y=curDate.getFullYear(),m=curDate.getMonth();
+  $('mapTitle').textContent=`${MONTHS[m]} ${y}`;
+  const first=new Date(y,m,1).getDay();
+  const dim=new Date(y,m+1,0).getDate();
+  const dip=new Date(y,m,0).getDate();
+  const tk=dKey(new Date());
+
+  let html=DAYS_S.map(d=>`<div class="month-day-head">${d}</div>`).join('');
+  for(let i=first-1;i>=0;i--) html+=`<div class="month-cell other">${dip-i}</div>`;
+  for(let d=1;d<=dim;d++){
+    const k=`${y}-${pad(m+1)}-${pad(d)}`;
+    const entry=entries[k];
+    const mood=entry?MOODS.find(mm=>mm.id===entry.mood):null;
+    const bg=mood?mood.col+'44':'transparent';
+    const isT=k===tk;
+    html+=`<div class="month-cell${entry?' has-entry':''}${isT?' today':''}" style="background:${bg}" title="${entry?entry.mood+' · energy '+entry.energy:''}">${d}</div>`;
+  }
+  $('mapGrid').innerHTML=html;
+}
+
+loadDay();
+</script>
+</body>
+</html>

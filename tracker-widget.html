@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: #100d0a;
+    --surface: #1c1710;
+    --surface2: #221c14;
+    --surface3: #2a2118;
+    --border: #2e2318;
+    --border2: #3d3025;
+    --text: #e8dfd3;
+    --text2: #c4b8a8;
+    --muted: #6a5a48;
+    --muted2: #9a8a78;
+    --accent: #c4904f;
+    --accent2: #e0b47a;
+    --accent3: #f0c98a;
+    --green: #7aaa88;
+    --blue: #7a9aaa;
+    --purple: #9a7aaa;
+    --red: #b05555;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    padding: 36px 20px 60px;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  .orb { position: fixed; border-radius: 50%; filter: blur(90px); pointer-events: none; }
+  .orb-1 { width: 340px; height: 340px; background: radial-gradient(circle, #c4904f, transparent); top: -100px; right: -80px; opacity: 0.09; animation: o1 14s ease-in-out infinite; }
+  .orb-2 { width: 240px; height: 240px; background: radial-gradient(circle, #7a5c3a, transparent); bottom: -60px; left: -50px; opacity: 0.08; animation: o2 17s ease-in-out infinite; }
+  .orb-3 { width: 180px; height: 180px; background: radial-gradient(circle, #e0b47a, transparent); top: 50%; left: 8%; opacity: 0.05; animation: o3 22s ease-in-out infinite; }
+  @keyframes o1 { 0%,100%{transform:translate(0,0) scale(1)} 50%{transform:translate(-18px,28px) scale(1.08)} }
+  @keyframes o2 { 0%,100%{transform:translate(0,0)} 50%{transform:translate(22px,-32px)} }
+  @keyframes o3 { 0%,100%{transform:translate(0,0);opacity:.05} 50%{transform:translate(15px,-20px);opacity:.09} }
+
+  .page {
+    width: 680px;
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.6s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 18px;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .page-header::after {
+    content: '';
+    position: absolute; bottom: -1px; left: 0;
+    height: 1px;
+    background: linear-gradient(to right, var(--accent), transparent 60%);
+    width: 0;
+    animation: lineGrow 1s 0.3s cubic-bezier(0.16,1,0.3,1) forwards;
+  }
+  .page-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px; font-weight: 300;
+    letter-spacing: 0.06em; color: var(--text);
+    line-height: 1; margin-bottom: 4px;
+  }
+  .page-sub {
+    font-size: 9px; letter-spacing: 0.28em;
+    color: var(--muted2); text-transform: uppercase;
+    font-style: italic; font-family: 'Cormorant Garamond', serif;
+  }
+  .btn-new-tracker {
+    display: flex; align-items: center; gap: 6px;
+    background: none; border: 1px solid var(--border2);
+    border-radius: 2px; padding: 8px 14px;
+    color: var(--muted2); cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 300;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    transition: all 0.22s; position: relative; overflow: hidden;
+  }
+  .btn-new-tracker::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+    z-index: 0;
+  }
+  .btn-new-tracker:hover::before { transform: translateX(0); }
+  .btn-new-tracker:hover { color: #100d0a; border-color: var(--accent); }
+  .btn-new-tracker span { position: relative; z-index: 1; }
+
+  /* ── TRACKERS GRID ── */
+  .trackers { display: flex; flex-direction: column; gap: 16px; }
+
+  /* ── TRACKER CARD ── */
+  .tracker-card {
+    border: 1px solid var(--border);
+    background: var(--surface);
+    border-radius: 2px;
+    position: relative;
+    overflow: hidden;
+    animation: cardIn 0.4s cubic-bezier(0.16,1,0.3,1) both;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+  .tracker-card:hover {
+    border-color: var(--border2);
+    box-shadow: 0 6px 28px rgba(0,0,0,0.35);
+  }
+  /* Color accent top bar */
+  .tracker-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--accent));
+    opacity: 0.7;
+    transition: opacity 0.2s;
+  }
+  .tracker-card:hover::before { opacity: 1; }
+  /* Corner ornaments */
+  .tracker-card .corner-tl { position: absolute; top: 8px; left: 8px; width: 8px; height: 8px; border-top: 1px solid var(--card-color, var(--accent)); border-left: 1px solid var(--card-color, var(--accent)); opacity: 0.3; pointer-events: none; }
+  .tracker-card .corner-br { position: absolute; bottom: 8px; right: 8px; width: 8px; height: 8px; border-bottom: 1px solid var(--card-color, var(--accent)); border-right: 1px solid var(--card-color, var(--accent)); opacity: 0.3; pointer-events: none; }
+
+  /* Card header */
+  .card-header {
+    display: flex; align-items: center;
+    justify-content: space-between;
+    padding: 16px 18px 12px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .card-header-left { display: flex; align-items: center; gap: 10px; }
+  .card-icon {
+    width: 18px; height: 18px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--card-color, var(--accent));
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .card-icon svg { width: 100%; height: 100%; stroke: currentColor; }
+  .tracker-card:hover .card-icon { transform: scale(1.15); }
+  .card-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 17px; font-weight: 300;
+    color: var(--text); letter-spacing: 0.04em;
+    transition: color 0.2s;
+  }
+  .tracker-card:hover .card-title { color: var(--accent2); }
+
+  .card-header-right { display: flex; align-items: center; gap: 10px; }
+  .progress-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 15px; font-weight: 300;
+    color: var(--muted2); letter-spacing: 0.02em;
+    transition: color 0.3s;
+  }
+  .progress-label.active { color: var(--accent2); }
+
+  .chevron {
+    color: var(--muted); font-size: 10px;
+    transition: transform 0.3s cubic-bezier(0.34,1.2,0.64,1), color 0.2s;
+  }
+  .tracker-card.open .chevron { transform: rotate(180deg); color: var(--accent); }
+
+  /* Progress bar */
+  .card-progress {
+    padding: 0 18px 14px;
+  }
+  .progress-track {
+    height: 2px; background: var(--border);
+    border-radius: 1px; overflow: hidden; position: relative;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(to right, var(--card-color, var(--accent)), color-mix(in srgb, var(--card-color, var(--accent)) 60%, white));
+    border-radius: 1px;
+    transition: width 0.7s cubic-bezier(0.34,1.2,0.64,1);
+    position: relative;
+  }
+  .progress-fill::after {
+    content: '';
+    position: absolute; top: 0; right: 0; bottom: 0;
+    width: 16px;
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.4));
+  }
+
+  /* Items body */
+  .card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.45s cubic-bezier(0.16,1,0.3,1);
+  }
+  .tracker-card.open .card-body { max-height: 800px; }
+
+  .card-inner { padding: 0 18px 16px; }
+
+  /* Item row */
+  .item-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--border);
+    animation: rowIn 0.25s cubic-bezier(0.16,1,0.3,1) both;
+    transition: background 0.15s;
+    border-radius: 1px;
+    position: relative;
+  }
+  .item-row:last-of-type { border-bottom: none; }
+  .item-row::before {
+    content: '';
+    position: absolute; left: -18px; top: 25%; bottom: 25%;
+    width: 2px; background: var(--card-color, var(--accent));
+    transform: scaleY(0);
+    transition: transform 0.2s cubic-bezier(0.34,1.2,0.64,1);
+    border-radius: 1px;
+  }
+  .item-row:hover::before { transform: scaleY(1); }
+
+  .item-check {
+    width: 14px; height: 14px; flex-shrink: 0;
+    border: 1px solid var(--muted);
+    border-radius: 2px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.22s cubic-bezier(0.34,1.2,0.64,1);
+  }
+  .item-check:hover { border-color: var(--card-color, var(--accent)); transform: scale(1.15); }
+  .item-check.checked {
+    background: var(--card-color, var(--accent));
+    border-color: var(--card-color, var(--accent));
+    animation: checkPop 0.3s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  .item-check.checked::after {
+    content: '';
+    width: 7px; height: 5px;
+    border-left: 1.5px solid #100d0a;
+    border-bottom: 1.5px solid #100d0a;
+    transform: rotate(-45deg) translateY(-1px);
+  }
+
+  .item-text {
+    flex: 1; font-size: 12px; color: var(--text2);
+    letter-spacing: 0.03em; line-height: 1.3;
+    transition: color 0.2s;
+  }
+  .item-row:hover .item-text { color: var(--text); }
+  .item-text.done { text-decoration: line-through; color: var(--muted2); }
+
+  .btn-del-item {
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    padding: 3px; opacity: 0;
+    transition: all 0.2s; display: flex;
+    align-items: center; justify-content: center;
+    border-radius: 2px;
+  }
+  .item-row:hover .btn-del-item { opacity: 1; }
+  .btn-del-item:hover { color: var(--red); background: rgba(176,85,85,0.12); }
+
+  /* Add item row */
+  .add-item-row {
+    display: flex; gap: 8px; align-items: center;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 4px;
+  }
+  .add-item-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 7px 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 11px; font-weight: 300;
+    letter-spacing: 0.04em; outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .add-item-input::placeholder { color: var(--muted); }
+  .add-item-input:focus {
+    border-color: var(--card-color, var(--accent));
+    box-shadow: 0 0 0 2px rgba(196,144,79,0.1);
+  }
+  .btn-add-item {
+    background: none; border: 1px solid var(--border2);
+    border-radius: 2px; padding: 7px 12px;
+    color: var(--muted2); cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 300;
+    letter-spacing: 0.18em; text-transform: uppercase;
+    transition: all 0.2s; white-space: nowrap;
+  }
+  .btn-add-item:hover {
+    border-color: var(--card-color, var(--accent));
+    color: var(--accent2);
+  }
+
+  /* Card actions */
+  .card-actions {
+    display: flex; gap: 6px;
+  }
+  .btn-card-action {
+    background: none; border: none;
+    color: var(--muted); cursor: pointer;
+    padding: 4px; border-radius: 2px;
+    transition: all 0.2s; display: flex;
+    align-items: center; justify-content: center;
+  }
+  .btn-card-action:hover { color: var(--red); background: rgba(176,85,85,0.1); }
+
+  /* ── NEW TRACKER MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(10,8,6,0.85);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: none; align-items: center; justify-content: center;
+    animation: fadeIn 0.2s ease;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    width: 380px;
+    background: var(--surface);
+    border: 1px solid var(--border2);
+    padding: 28px;
+    position: relative;
+    animation: modalIn 0.35s cubic-bezier(0.16,1,0.3,1) forwards;
+    box-shadow: 0 24px 60px rgba(0,0,0,0.6);
+  }
+  .modal::before { content:''; position:absolute; top:7px; left:7px; width:9px; height:9px; border:1px solid var(--accent); border-right:none; border-bottom:none; opacity:0.35; }
+  .modal::after  { content:''; position:absolute; bottom:7px; right:7px; width:9px; height:9px; border:1px solid var(--accent); border-left:none; border-top:none; opacity:0.35; }
+  .modal-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px; font-weight: 300;
+    letter-spacing: 0.05em; color: var(--text);
+    margin-bottom: 20px;
+  }
+  .modal-field { margin-bottom: 14px; }
+  .modal-label {
+    font-size: 9px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--muted2);
+    margin-bottom: 6px; display: block;
+  }
+  .modal-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 2px; padding: 9px 12px;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-size: 12px; font-weight: 300;
+    letter-spacing: 0.04em; outline: none;
+    transition: border-color 0.2s;
+  }
+  .modal-input:focus { border-color: var(--accent); }
+
+  /* Color + icon pickers */
+  .color-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+  .color-opt {
+    width: 22px; height: 22px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    transition: all 0.2s; position: relative;
+  }
+  .color-opt.selected { border-color: var(--text); transform: scale(1.2); }
+  .color-opt:hover { transform: scale(1.15); }
+
+  .icon-picker { display: flex; gap: 8px; flex-wrap: wrap; }
+  .icon-opt {
+    width: 34px; height: 34px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 2px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s;
+    color: var(--muted2);
+  }
+  .icon-opt svg { width: 16px; height: 16px; stroke: currentColor; }
+  .icon-opt.selected { border-color: var(--accent); background: var(--border2); color: var(--accent2); }
+  .icon-opt:hover { border-color: var(--border2); color: var(--text); }
+
+  .modal-btns { display: flex; gap: 8px; margin-top: 20px; }
+  .btn-modal-cancel {
+    flex: 1; background: none; border: 1px solid var(--border);
+    border-radius: 2px; padding: 9px;
+    color: var(--muted2); cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 300;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    transition: all 0.2s;
+  }
+  .btn-modal-cancel:hover { border-color: var(--border2); color: var(--text); }
+  .btn-modal-create {
+    flex: 2; background: none; border: 1px solid var(--accent);
+    border-radius: 2px; padding: 9px;
+    color: var(--accent2); cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 9px; font-weight: 300;
+    letter-spacing: 0.2em; text-transform: uppercase;
+    transition: all 0.22s; position: relative; overflow: hidden;
+  }
+  .btn-modal-create::before {
+    content: ''; position: absolute; inset: 0;
+    background: var(--accent);
+    transform: translateX(-101%);
+    transition: transform 0.25s cubic-bezier(0.16,1,0.3,1);
+    z-index: 0;
+  }
+  .btn-modal-create:hover::before { transform: translateX(0); }
+  .btn-modal-create:hover { color: #100d0a; }
+  .btn-modal-create span { position: relative; z-index: 1; }
+
+  /* Toast */
+  .toast {
+    position: fixed; bottom: 28px; left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-left: 2px solid var(--accent);
+    padding: 10px 20px;
+    font-size: 10px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--text2);
+    opacity: 0; transition: all 0.3s cubic-bezier(0.16,1,0.3,1);
+    pointer-events: none; z-index: 200; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── KEYFRAMES ── */
+  @keyframes fadeUp  { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes fadeIn  { from{opacity:0} to{opacity:1} }
+  @keyframes lineGrow{ from{width:0} to{width:45%} }
+  @keyframes cardIn  { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+  @keyframes rowIn   { from{opacity:0;transform:translateX(-5px)} to{opacity:1;transform:translateX(0)} }
+  @keyframes checkPop{ 0%{transform:scale(0.8)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
+  @keyframes modalIn { from{opacity:0;transform:translateY(-12px) scale(0.97)} to{opacity:1;transform:translateY(0) scale(1)} }
+</style>
+</head>
+<body>
+
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+<div class="toast" id="toast"></div>
+
+<!-- NEW TRACKER MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOut(event)">
+  <div class="modal">
+    <div class="modal-title">New Tracker</div>
+    <div class="modal-field">
+      <label class="modal-label">Name</label>
+      <input class="modal-input" id="newName" type="text" placeholder="e.g. Finance Goals" maxlength="40"
+        onkeydown="if(event.key==='Enter') createTracker()">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Icon</label>
+      <div class="icon-picker" id="iconPicker"></div>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Color</label>
+      <div class="color-picker" id="colorPicker"></div>
+    </div>
+    <div class="modal-btns">
+      <button class="btn-modal-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-modal-create" onclick="createTracker()"><span>Create Tracker</span></button>
+    </div>
+  </div>
+</div>
+
+<div class="page">
+
+  <div class="page-header">
+    <div>
+      <div class="page-title">My Trackers</div>
+      <div class="page-sub">progress & habits</div>
+    </div>
+    <button class="btn-new-tracker" onclick="openModal()">
+      <span>+ New tracker</span>
+    </button>
+  </div>
+
+  <div class="trackers" id="trackers"></div>
+
+</div>
+
+<script>
+  const COLORS = [
+    { name:'amber',  val:'#c4904f' },
+    { name:'gold',   val:'#e0b47a' },
+    { name:'green',  val:'#7aaa88' },
+    { name:'blue',   val:'#7a9aaa' },
+    { name:'purple', val:'#9a7aaa' },
+    { name:'rose',   val:'#b07878' },
+    { name:'sage',   val:'#8aaa7a' },
+    { name:'clay',   val:'#aa8a6a' },
+  ];
+  // SVG icons — dark academia aesthetic
+  const ICONS = [
+    { id:'quill',  svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4C14 4 6 10 4 20"/><path d="M20 4c-2 6-6 10-10 14"/><path d="M4 20l4-2-2-2"/></svg>' },
+    { id:'book',   svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19V5a2 2 0 0 1 2-2h13"/><path d="M4 19a2 2 0 0 0 2 2h13V7H6a2 2 0 0 0-2 2"/><line x1="12" y1="2" x2="12" y2="22"/></svg>' },
+    { id:'candle', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="2" x2="12" y2="4"/><path d="M9 21h6"/><path d="M10 21V10h4v11"/><path d="M10 10a2 2 0 0 1 4 0"/><path d="M12 4c0 0-2 2-2 4s2 2 2 2 2-1 2-3-2-3-2-3z"/></svg>' },
+    { id:'scroll', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h12a2 2 0 0 0 0-4H8"/><path d="M8 21a2 2 0 0 1 0-4h12"/><path d="M5 3h14a2 2 0 0 1 2 2v2H3V5a2 2 0 0 1 2-2z"/><path d="M3 7v12a2 2 0 0 0 2 2"/></svg>' },
+    { id:'compass',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="16.24,7.76 14.12,14.12 7.76,16.24 9.88,9.88"/></svg>' },
+    { id:'hourglass', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 22h14"/><path d="M5 2h14"/><path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22"/><path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2"/></svg>' },
+    { id:'moon',   svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>' },
+    { id:'key',    svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="5.5"/><path d="M21 2l-9.6 9.6"/><path d="M15.5 7.5l3 3L22 7l-3-3"/></svg>' },
+    { id:'leaf',   svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/></svg>' },
+    { id:'star',   svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26"/></svg>' },
+    { id:'flask',  svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6l-4 9h12l-4-9V3"/></svg>' },
+    { id:'eye',    svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>' },
+    { id:'feather',svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z"/><line x1="16" y1="8" x2="2" y2="22"/><line x1="17.5" y1="15" x2="9" y2="15"/></svg>' },
+    { id:'sun',    svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>' },
+    { id:'crown',  svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><path d="M2 19h20"/><path d="M2 19l3-9 4.5 4.5L12 5l2.5 9.5L19 10l3 9"/></svg>' },
+    { id:'anchor', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="5" r="3"/><line x1="12" y1="8" x2="12" y2="22"/><path d="M5 15H2a10 10 0 0 0 20 0h-3"/></svg>' },
+  ];
+
+  let selectedColor = COLORS[0].val;
+  let selectedIcon  = ICONS[0].id;
+  let trackers = JSON.parse(localStorage.getItem('da-trackers2') || 'null');
+
+  if (!trackers) {
+    trackers = [
+      { id: 1, name: 'Tasks / To-Do', iconId: 'quill', color: '#c4904f', open: true,
+        items: [
+          { id: 101, text: 'Review lecture notes', done: false },
+          { id: 102, text: 'Submit assignment', done: false },
+          { id: 103, text: 'Read chapter 4', done: true },
+        ]
+      },
+      { id: 2, name: 'Reading Tracker', iconId: 'book', color: '#7a9aaa', open: false,
+        items: [
+          { id: 201, text: 'The Secret History', done: true },
+          { id: 202, text: 'If We Were Villains', done: false },
+          { id: 203, text: 'Donna Tartt — Goldfinch', done: false },
+        ]
+      },
+      { id: 3, name: 'Habit Tracker', iconId: 'leaf', color: '#7aaa88', open: false,
+        items: [
+          { id: 301, text: 'Morning journal', done: false },
+          { id: 302, text: 'Exercise', done: true },
+          { id: 303, text: 'No phone before 9am', done: false },
+        ]
+      },
+    ];
+    save();
+  }
+
+  function save() { localStorage.setItem('da-trackers2', JSON.stringify(trackers)); }
+  const $ = id => document.getElementById(id);
+
+  function showToast(msg) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._t);
+    t._t = setTimeout(() => t.classList.remove('show'), 2000);
+  }
+
+  // ── MODAL ──
+  function openModal() {
+    selectedColor = COLORS[0].val;
+    selectedIcon  = ICONS[0];
+    $('newName').value = '';
+    renderColorPicker();
+    renderIconPicker();
+    $('modalOverlay').classList.add('open');
+    setTimeout(() => $('newName').focus(), 100);
+  }
+  function closeModal() { $('modalOverlay').classList.remove('open'); }
+  function closeModalOut(e) { if (e.target === $('modalOverlay')) closeModal(); }
+
+  function renderColorPicker() {
+    $('colorPicker').innerHTML = COLORS.map(c => `
+      <div class="color-opt ${c.val === selectedColor ? 'selected':''}"
+        style="background:${c.val}"
+        onclick="selectColor('${c.val}')"></div>`).join('');
+  }
+  function renderIconPicker() {
+    $('iconPicker').innerHTML = ICONS.map(ic => `
+      <div class="icon-opt ${ic.id === selectedIcon ? 'selected':''}"
+        style="padding:4px"
+        onclick="selectIcon('${ic.id}')">${ic.svg}</div>`).join('');
+  }
+  function selectColor(val) { selectedColor = val; renderColorPicker(); }
+  function selectIcon(ic)   { selectedIcon  = ic;  renderIconPicker(); }
+  function getIconSvg(id)   { const ic = ICONS.find(i => i.id === id); return ic ? ic.svg : ICONS[0].svg; }
+
+  function createTracker() {
+    const name = $('newName').value.trim();
+    if (!name) { $('newName').style.borderColor='var(--red)'; setTimeout(()=>$('newName').style.borderColor='',600); return; }
+    trackers.push({ id: Date.now(), name, iconId: selectedIcon, color: selectedColor, open: true, items: [] });
+    save(); closeModal(); render();
+    showToast('Tracker created ✦');
+  }
+
+  // ── TRACKER ACTIONS ──
+  function toggleCard(id) {
+    const t = trackers.find(t => t.id === id);
+    if (t) { t.open = !t.open; save(); render(); }
+  }
+
+  function deleteTracker(id) {
+    if (!confirm('Delete this tracker?')) return;
+    trackers = trackers.filter(t => t.id !== id);
+    save(); render();
+    showToast('Tracker removed');
+  }
+
+  function addItem(trackerId) {
+    const input = document.querySelector(`[data-add="${trackerId}"]`);
+    const text = input.value.trim();
+    if (!text) return;
+    const t = trackers.find(t => t.id === trackerId);
+    t.items.push({ id: Date.now(), text, done: false });
+    input.value = '';
+    save(); render();
+    // Re-open
+    const card = document.querySelector(`[data-tracker="${trackerId}"]`);
+    if (card) card.classList.add('open');
+  }
+
+  function toggleItem(trackerId, itemId) {
+    const t = trackers.find(t => t.id === trackerId);
+    const item = t.items.find(i => i.id === itemId);
+    if (item) { item.done = !item.done; save(); render(); }
+  }
+
+  function deleteItem(trackerId, itemId) {
+    const t = trackers.find(t => t.id === trackerId);
+    t.items = t.items.filter(i => i.id !== itemId);
+    save(); render();
+  }
+
+  // ── RENDER ──
+  function render() {
+    const container = $('trackers');
+    if (trackers.length === 0) {
+      container.innerHTML = `<div style="text-align:center;padding:48px 0;color:var(--muted);font-family:'Cormorant Garamond',serif;font-size:16px;font-style:italic;letter-spacing:0.1em">No trackers yet — create one above</div>`;
+      return;
+    }
+
+    container.innerHTML = trackers.map((t, ti) => {
+      const total = t.items.length;
+      const done  = t.items.filter(i => i.done).length;
+      const pct   = total ? Math.round((done/total)*100) : 0;
+
+      const itemsHTML = t.items.map((item, ii) => `
+        <div class="item-row" style="animation-delay:${ii*0.04}s">
+          <div class="item-check ${item.done ? 'checked':''}"
+            onclick="toggleItem(${t.id},${item.id})"
+            style="${item.done ? `background:${t.color};border-color:${t.color}` : ''}"></div>
+          <span class="item-text ${item.done ? 'done':''}">${item.text}</span>
+          <button class="btn-del-item" onclick="deleteItem(${t.id},${item.id})">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+        </div>`).join('');
+
+      return `
+      <div class="tracker-card ${t.open ? 'open':''}" data-tracker="${t.id}"
+        style="--card-color:${t.color}; animation-delay:${ti*0.08}s">
+        <div class="corner-tl"></div>
+        <div class="corner-br"></div>
+
+        <div class="card-header" onclick="toggleCard(${t.id})">
+          <div class="card-header-left">
+            <span class="card-icon">${getIconSvg(t.iconId || 'quill')}</span>
+            <span class="card-title">${t.name}</span>
+          </div>
+          <div class="card-header-right">
+            <span class="progress-label ${done > 0 ? 'active':''}">${done}/${total}</span>
+            <div class="card-actions" onclick="event.stopPropagation()">
+              <button class="btn-card-action" onclick="deleteTracker(${t.id})" title="Delete tracker">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><polyline points="3,6 5,6 21,6"/><path d="M19,6l-1,14H6L5,6"/><path d="M10,11v6M14,11v6"/><path d="M9,6V4h6v2"/></svg>
+              </button>
+            </div>
+            <svg class="chevron" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6,9 12,15 18,9"/></svg>
+          </div>
+        </div>
+
+        <div class="card-progress">
+          <div class="progress-track">
+            <div class="progress-fill" style="width:${pct}%"></div>
+          </div>
+        </div>
+
+        <div class="card-body">
+          <div class="card-inner">
+            ${itemsHTML || `<div style="padding:8px 0;font-size:11px;color:var(--muted);font-style:italic;letter-spacing:0.05em">No items yet</div>`}
+            <div class="add-item-row">
+              <input class="add-item-input" data-add="${t.id}" type="text"
+                placeholder="Add item..."
+                style="--card-color:${t.color}"
+                onkeydown="if(event.key==='Enter') addItem(${t.id})"
+                maxlength="80">
+              <button class="btn-add-item"
+                style="--card-color:${t.color}"
+                onclick="addItem(${t.id})">+ Add</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  render();
+</script>
+</body>
+</html>

@@ -1,0 +1,725 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pomodoro</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=Inter:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  html { background: transparent !important; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --bg: transparent;
+    --surface: rgba(26, 21, 17, 0.75);
+    --surface2: rgba(32, 26, 19, 0.85);
+    --border: #2e2318;
+    --border2: #3d3025;
+    --text: #d4cbbf;
+    --muted: #5c4e3d;
+    --muted2: #8a7a68;
+    --accent: #b8834a;
+    --accent2: #d4a574;
+    --warm: #7a5c3a;
+    --green: #6b8f72;
+  }
+
+  body {
+    background: transparent;
+    color: var(--text);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* Animated warm background orbs */
+  .orb { display: none; } .orb-hidden {
+    position: fixed;
+    border-radius: 50%;
+    filter: blur(80px);
+    pointer-events: none;
+    opacity: 0.12;
+  }
+  .orb-1 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, #b8834a, transparent);
+    top: -80px; right: -60px;
+    animation: orbFloat1 12s ease-in-out infinite;
+  }
+  .orb-2 {
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, #7a5c3a, transparent);
+    bottom: -50px; left: -40px;
+    animation: orbFloat2 15s ease-in-out infinite;
+  }
+  .orb-3 {
+    width: 150px; height: 150px;
+    background: radial-gradient(circle, #d4a574, transparent);
+    top: 50%; left: 10%;
+    animation: orbFloat3 18s ease-in-out infinite;
+    opacity: 0.07;
+  }
+
+  @keyframes orbFloat1 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    33%       { transform: translate(-20px, 30px) scale(1.1); }
+    66%       { transform: translate(15px, -20px) scale(0.9); }
+  }
+  @keyframes orbFloat2 {
+    0%, 100% { transform: translate(0, 0) scale(1); }
+    50%       { transform: translate(30px, -40px) scale(1.15); }
+  }
+  @keyframes orbFloat3 {
+    0%, 100% { transform: translate(0, 0); opacity: 0.07; }
+    50%       { transform: translate(20px, -30px); opacity: 0.12; }
+  }
+
+  .container {
+    width: 340px;
+    padding: 32px 32px 28px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    position: relative;
+    z-index: 1;
+    animation: fadeUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    /* Subtle inner glow */
+    box-shadow: inset 0 1px 0 rgba(180,130,80,0.08), 0 0 60px rgba(0,0,0,0.6);
+  }
+
+  /* Corner ornaments — animated on load */
+  .container::before {
+    content: ''; position: absolute; top: 7px; left: 7px;
+    width: 10px; height: 10px;
+    border: 1px solid var(--accent); border-right: none; border-bottom: none;
+    opacity: 0; animation: cornerFade 0.8s 0.4s ease forwards;
+  }
+  .container::after {
+    content: ''; position: absolute; bottom: 7px; right: 7px;
+    width: 10px; height: 10px;
+    border: 1px solid var(--accent); border-left: none; border-top: none;
+    opacity: 0; animation: cornerFade 0.8s 0.5s ease forwards;
+  }
+
+  /* HEADER */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 28px;
+  }
+  .mode-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    font-weight: 300;
+    color: var(--text);
+    letter-spacing: 0.02em;
+    line-height: 1;
+    margin-bottom: 3px;
+    transition: color 0.4s;
+  }
+  .subtitle {
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--muted2);
+    text-transform: uppercase;
+    font-style: italic;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  .spotify-btn {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: none;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 5px 9px;
+    cursor: pointer;
+    color: var(--muted2);
+    font-size: 9px;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    transition: all 0.25s;
+  }
+  .spotify-btn:hover, .spotify-btn.open {
+    border-color: #1DB954;
+    color: #1DB954;
+    box-shadow: 0 0 12px rgba(29,185,84,0.1);
+  }
+  .spotify-btn svg { width: 10px; height: 10px; fill: currentColor; flex-shrink: 0; }
+
+  /* TIMER RING */
+  .timer-wrap {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 24px;
+    position: relative;
+    cursor: pointer;
+  }
+
+  /* Rotating outer glow ring when running */
+  .ring-glow {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    border: 1px solid transparent;
+    border-top-color: rgba(180,130,80,0.3);
+    border-right-color: rgba(180,130,80,0.1);
+    opacity: 0;
+    transition: opacity 0.4s;
+    pointer-events: none;
+  }
+  .ring-glow.spinning {
+    opacity: 1;
+    animation: spinGlow 4s linear infinite;
+  }
+
+  .ring-svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--border); stroke-width: 1.5; }
+  .ring-progress {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 1.5;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1s linear, stroke 0.5s ease;
+    stroke-dasharray: 408;
+    stroke-dashoffset: 0;
+  }
+
+  /* Breathing glow on the ring when running */
+  .timer-wrap.running .ring-progress {
+    filter: drop-shadow(0 0 3px var(--accent));
+    animation: ringBreath 3s ease-in-out infinite;
+  }
+
+  .timer-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    pointer-events: none;
+    user-select: none;
+  }
+  .time-display {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 46px;
+    font-weight: 300;
+    letter-spacing: 0.02em;
+    color: var(--text);
+    line-height: 1;
+    transition: color 0.4s;
+  }
+  .colon {
+    color: var(--muted);
+    animation: colonBlink 1s step-end infinite;
+    display: inline-block;
+  }
+  .colon.paused { animation: none; opacity: 0.4; }
+
+  .timer-hint {
+    font-size: 9px;
+    color: var(--muted);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-top: 5px;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.3s;
+  }
+
+  /* MODES */
+  .modes {
+    display: flex;
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+  }
+  /* Sliding indicator */
+  .mode-indicator {
+    position: absolute;
+    top: 0; bottom: 0;
+    width: 33.33%;
+    background: var(--border2);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    pointer-events: none;
+  }
+  .mode-btn {
+    flex: 1;
+    padding: 7px 4px;
+    background: none;
+    border: none;
+    color: var(--muted2);
+    font-family: 'Inter', sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: color 0.25s;
+    border-right: 1px solid var(--border);
+    position: relative;
+    z-index: 1;
+  }
+  .mode-btn:last-child { border-right: none; }
+  .mode-btn.active { color: var(--accent2); }
+  .mode-btn:hover:not(.active) { color: var(--text); }
+
+  /* CONTROLS */
+  .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  .btn-main {
+    width: 50px; height: 50px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    background: none;
+    color: var(--accent);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s;
+    position: relative;
+  }
+  /* Dual pulse rings */
+  .btn-main::before, .btn-main::after {
+    content: '';
+    position: absolute;
+    inset: -5px;
+    border-radius: 50%;
+    border: 1px solid var(--accent);
+    opacity: 0;
+  }
+  .btn-main::after { inset: -10px; }
+  .btn-main:hover {
+    background: var(--accent);
+    color: #100d0a;
+    box-shadow: 0 0 20px rgba(184,131,74,0.25);
+  }
+  .btn-main.running::before { animation: pulse-ring 2s ease-out infinite; }
+  .btn-main.running::after  { animation: pulse-ring 2s ease-out 0.5s infinite; }
+
+  .btn-icon {
+    background: none; border: none;
+    color: var(--muted2);
+    cursor: pointer; padding: 10px;
+    transition: all 0.2s; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .btn-icon:hover {
+    color: var(--accent2);
+    background: rgba(180,130,80,0.06);
+    transform: scale(1.1);
+  }
+
+  /* BOTTOM */
+  .bottom {
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 13px;
+  }
+  .row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--muted2);
+    text-transform: uppercase;
+  }
+
+  .session-dots { display: flex; gap: 7px; align-items: center; }
+  .dot {
+    width: 6px; height: 6px;
+    border: 1px solid var(--muted);
+    border-radius: 50%;
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    cursor: pointer;
+    position: relative;
+  }
+  .dot::after {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s;
+  }
+  .dot.filled {
+    background: var(--accent);
+    border-color: var(--accent);
+    transform: scale(1.3);
+    box-shadow: 0 0 6px rgba(184,131,74,0.5);
+  }
+  .dot:hover { border-color: var(--accent2); }
+
+  .pill-toggle {
+    display: flex;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  .pill-btn {
+    background: none; border: none;
+    color: var(--muted2);
+    font-family: 'Inter', sans-serif;
+    font-size: 8px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    padding: 4px 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+  .pill-btn.active { background: var(--border2); color: var(--accent2); }
+  .pill-btn:hover:not(.active) { color: var(--text); }
+
+  /* SPOTIFY PANEL */
+  .spotify-panel {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+    display: none;
+  }
+  .spotify-panel.open { display: block; animation: fadeUp 0.3s cubic-bezier(0.16,1,0.3,1) forwards; }
+  .spotify-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .spotify-label {
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--muted2);
+  }
+  .close-btn {
+    background: none; border: none;
+    color: var(--muted2); cursor: pointer;
+    font-size: 11px; padding: 2px 4px;
+    transition: color 0.2s; line-height: 1;
+  }
+  .close-btn:hover { color: var(--text); }
+  .spotify-panel iframe { width: 100%; border: none; border-radius: 2px; display: block; }
+
+  /* Flash on complete */
+  .flash {
+    position: fixed; inset: 0;
+    background: radial-gradient(circle at center, var(--accent), transparent 70%);
+    opacity: 0; pointer-events: none; z-index: 50;
+  }
+
+  /* KEYFRAMES */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes cornerFade {
+    to { opacity: 0.4; }
+  }
+  @keyframes pulse-ring {
+    0%   { opacity: 0.4; transform: scale(1); }
+    100% { opacity: 0; transform: scale(1.5); }
+  }
+  @keyframes spinGlow {
+    from { transform: translate(-50%, -50%) rotate(0deg); }
+    to   { transform: translate(-50%, -50%) rotate(360deg); }
+  }
+  @keyframes ringBreath {
+    0%, 100% { filter: drop-shadow(0 0 2px var(--accent)); }
+    50%       { filter: drop-shadow(0 0 6px var(--accent2)); }
+  }
+  @keyframes colonBlink {
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.2; }
+  }
+  @keyframes flashAnim {
+    0%   { opacity: 0.15; }
+    100% { opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Background orbs -->
+<div class="orb orb-1"></div>
+<div class="orb orb-2"></div>
+<div class="orb orb-3"></div>
+
+<div class="flash" id="flash"></div>
+
+<div class="container" id="mainContainer">
+
+  <div class="header">
+    <div>
+      <div class="mode-label" id="modeLabel">Focus</div>
+      <div class="subtitle">per aspera ad astra</div>
+    </div>
+    <button class="spotify-btn" id="spotifyToggle" onclick="toggleSpotify()">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      playlist
+    </button>
+  </div>
+
+  <div class="timer-wrap" id="timerWrap" onclick="toggleTimer()">
+    <div class="ring-glow" id="ringGlow"></div>
+    <svg class="ring-svg" width="148" height="148" viewBox="0 0 148 148">
+      <circle class="ring-bg" cx="74" cy="74" r="65"/>
+      <circle class="ring-progress" id="ringProgress" cx="74" cy="74" r="65"/>
+    </svg>
+    <div class="timer-center">
+      <div class="time-display">
+        <span id="timeMin">25</span><span class="colon paused" id="colon">:</span><span id="timeSec">00</span>
+      </div>
+      <div class="timer-hint" id="timerHint">tap to start</div>
+    </div>
+  </div>
+
+  <div class="modes">
+    <div class="mode-indicator" id="modeIndicator"></div>
+    <button class="mode-btn active" onclick="setMode('focus', 0)">Focus</button>
+    <button class="mode-btn" onclick="setMode('short', 1)">Short</button>
+    <button class="mode-btn" onclick="setMode('long', 2)">Long</button>
+  </div>
+
+  <div class="controls">
+    <button class="btn-icon" onclick="resetTimer()" title="Reset">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+    </button>
+    <button class="btn-main" id="mainBtn" onclick="toggleTimer()">
+      <svg id="playIcon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M5 3l14 9-14 9V3z"/></svg>
+      <svg id="pauseIcon" width="13" height="13" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 4h4v16H6zm8 0h4v16h-4z"/></svg>
+    </button>
+    <button class="btn-icon" onclick="skipSession()" title="Skip">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l10 8-10 8V4z"/><line x1="19" y1="4" x2="19" y2="20"/></svg>
+    </button>
+  </div>
+
+  <div class="bottom">
+    <div class="row">
+      <span class="label">Sessions</span>
+      <div class="session-dots">
+        <div class="dot" onclick="manualSession(0)"></div>
+        <div class="dot" onclick="manualSession(1)"></div>
+        <div class="dot" onclick="manualSession(2)"></div>
+        <div class="dot" onclick="manualSession(3)"></div>
+      </div>
+      <span class="label" id="sessionCount">0 / 4</span>
+    </div>
+    <div class="row">
+      <span class="label">Ambient</span>
+      <div class="pill-toggle">
+        <button class="pill-btn active" id="soundOff" onclick="setSound(false)">Off</button>
+        <button class="pill-btn" id="soundOn" onclick="setSound(true)">Rain</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="spotify-panel" id="spotifyPanel">
+    <div class="spotify-header">
+      <span class="spotify-label">Playlist</span>
+      <button class="close-btn" onclick="toggleSpotify()">✕</button>
+    </div>
+    <iframe
+      src="https://open.spotify.com/embed/playlist/5cwPclg5ZtafoBPWgZMHMb?utm_source=generator&theme=0"
+      height="152"
+      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+      loading="lazy">
+    </iframe>
+  </div>
+
+</div>
+
+<script>
+  const MODES = {
+    focus: { label: 'Focus', minutes: 25 },
+    short: { label: 'Short Break', minutes: 5 },
+    long:  { label: 'Long Break', minutes: 15 }
+  };
+
+  let currentMode = 'focus';
+  let totalSeconds = 25 * 60;
+  let remaining = totalSeconds;
+  let running = false;
+  let interval = null;
+  let sessions = 0;
+  let soundOn = false;
+  let audioCtx = null;
+  let rainNode = null;
+  let spotifyOpen = false;
+
+  const circumference = 2 * Math.PI * 65;
+  const $ = id => document.getElementById(id);
+
+  function setMode(mode, idx) {
+    currentMode = mode;
+    document.querySelectorAll('.mode-btn').forEach((b, i) =>
+      b.classList.toggle('active', i === idx)
+    );
+    $('modeIndicator').style.transform = `translateX(${idx * 100}%)`;
+    $('modeLabel').textContent = MODES[mode].label;
+    totalSeconds = MODES[mode].minutes * 60;
+    remaining = totalSeconds;
+    stopTimer();
+    const isBreak = mode !== 'focus';
+    $('ringProgress').style.stroke = isBreak ? 'var(--green)' : 'var(--accent)';
+    updateDisplay();
+    updateRing();
+  }
+
+  function updateDisplay() {
+    const m = Math.floor(remaining / 60);
+    const s = remaining % 60;
+    $('timeMin').textContent = String(m).padStart(2,'0');
+    $('timeSec').textContent = String(s).padStart(2,'0');
+  }
+
+  function updateRing() {
+    const offset = circumference * (1 - remaining / totalSeconds);
+    $('ringProgress').style.strokeDashoffset = offset;
+    $('ringProgress').style.strokeDasharray = circumference;
+  }
+
+  function stopTimer() {
+    running = false;
+    clearInterval(interval);
+    $('playIcon').style.display = '';
+    $('pauseIcon').style.display = 'none';
+    $('mainBtn').classList.remove('running');
+    $('timerWrap').classList.remove('running');
+    $('ringGlow').classList.remove('spinning');
+    $('colon').classList.add('paused');
+    $('timerHint').textContent = 'tap to start';
+    if (soundOn) stopRain();
+  }
+
+  function toggleTimer() {
+    if (running) {
+      stopTimer();
+    } else {
+      running = true;
+      $('playIcon').style.display = 'none';
+      $('pauseIcon').style.display = '';
+      $('mainBtn').classList.add('running');
+      $('timerWrap').classList.add('running');
+      $('ringGlow').classList.add('spinning');
+      $('colon').classList.remove('paused');
+      $('timerHint').textContent = 'tap to pause';
+      if (soundOn) startRain();
+      interval = setInterval(() => {
+        if (remaining <= 0) { stopTimer(); onComplete(); return; }
+        remaining--;
+        updateDisplay();
+        updateRing();
+      }, 1000);
+    }
+  }
+
+  function onComplete() {
+    if (currentMode === 'focus') { sessions = Math.min(sessions + 1, 4); updateSessions(); }
+    playBell();
+    const f = $('flash');
+    f.style.animation = 'none'; f.offsetHeight;
+    f.style.animation = 'flashAnim 0.8s ease forwards';
+    $('timerHint').textContent = 'complete ✦';
+  }
+
+  function resetTimer() {
+    stopTimer(); remaining = totalSeconds;
+    $('timerHint').textContent = 'tap to start';
+    updateDisplay(); updateRing();
+  }
+
+  function skipSession() {
+    stopTimer(); remaining = 0;
+    updateDisplay(); updateRing(); onComplete();
+  }
+
+  function updateSessions() {
+    document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('filled', i < sessions));
+    $('sessionCount').textContent = `${sessions} / 4`;
+  }
+
+  function manualSession(idx) {
+    sessions = idx < sessions ? idx : idx + 1;
+    sessions = Math.max(0, Math.min(4, sessions));
+    updateSessions();
+  }
+
+  function toggleSpotify() {
+    spotifyOpen = !spotifyOpen;
+    $('spotifyPanel').classList.toggle('open', spotifyOpen);
+    $('spotifyToggle').classList.toggle('open', spotifyOpen);
+  }
+
+  function getCtx() {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    return audioCtx;
+  }
+
+  function startRain() {
+    if (rainNode) return;
+    const ctx = getCtx();
+    const buf = ctx.createBuffer(1, ctx.sampleRate * 3, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    rainNode = ctx.createBufferSource();
+    rainNode.buffer = buf; rainNode.loop = true;
+    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 700;
+    const g = ctx.createGain(); g.gain.value = 0.05;
+    rainNode.connect(lp); lp.connect(g); g.connect(ctx.destination);
+    rainNode.start();
+  }
+
+  function stopRain() {
+    if (rainNode) { try { rainNode.stop(); } catch(e){} rainNode = null; }
+  }
+
+  function playBell() {
+    const ctx = getCtx();
+    [528, 660, 792].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const g = ctx.createGain();
+      osc.connect(g); g.connect(ctx.destination);
+      osc.frequency.value = freq; osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.18;
+      g.gain.setValueAtTime(0, t);
+      g.gain.linearRampToValueAtTime(0.15, t + 0.05);
+      g.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+      osc.start(t); osc.stop(t + 2.5);
+    });
+  }
+
+  function setSound(on) {
+    soundOn = on;
+    $('soundOn').classList.toggle('active', on);
+    $('soundOff').classList.toggle('active', !on);
+    if (on && running) startRain(); else stopRain();
+  }
+
+  updateDisplay();
+  updateRing();
+</script>
+</body>
+</html>
