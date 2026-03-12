@@ -247,8 +247,7 @@ Generá el contenido del día. Respondé ÚNICAMENTE con JSON válido, sin markd
   try {
     const res=await fetch('/api/claude',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]})
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]}) 
     });
     if(!res.ok){
       const err=await res.json().catch(()=>({}));
