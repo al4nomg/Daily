@@ -124,6 +124,16 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
     </div>
   </div>
 </div>
+<div class="feed-grid" style="margin-top:0">
+  <div class="feed-card" style="--fc-col:var(--green)">
+    <div class="fc-type"><span class="fc-dot" style="background:var(--green)"></span>Flashcard del día</div>
+    <div id="flashContent">
+      <div class="skeleton sk w90"></div>
+      <div class="skeleton sk w70"></div>
+      <div class="skeleton sk w50"></div>
+    </div>
+  </div>
+</div>
 
 <div id="historySection" style="display:none">
   <div class="history-section">
@@ -162,6 +172,23 @@ function publishShared(entry){
     feed.prompts.unshift({id:'p'+Date.now(),text:entry.question,type:'reflect',fav:false});
     if(feed.prompts.length>40) feed.prompts=feed.prompts.slice(0,40);
   }
+  // Push flashcard to fc-data (Flashcards widget localStorage)
+  if(entry.flashcard?.front){
+    let fcData=JSON.parse(localStorage.getItem('fc-data')||'{"decks":{},"cards":[]}');
+    const deck='Daily';
+    if(!fcData.decks[deck]) fcData.decks[deck]={name:deck,color:'#7aaa88'};
+    const today=new Date().toISOString().slice(0,10);
+    // Remove old daily card and add today's
+    fcData.cards=fcData.cards.filter(c=>!(c.deck===deck));
+    fcData.cards.push({
+      id:'daily-'+today,
+      deck,
+      front:entry.flashcard.front,
+      back:entry.flashcard.back,
+      level:0,due:today,reps:0
+    });
+    localStorage.setItem('fc-data',JSON.stringify(fcData));
+  }
   localStorage.setItem('daily-feed',JSON.stringify(feed));
 }
 
@@ -183,6 +210,18 @@ function renderEntry(entry){
     <div class="fc-hint">Abrí el Scriptorium para responder</div>
     <div class="fc-actions">
       <button class="fc-btn hi" style="--fc-col:var(--purple)" onclick='toScriptorium("${qq.replace(/"/g,'&quot;')}")'>→ Scriptorium</button>
+    </div>`;
+
+  // Flashcard
+  const ff=entry.flashcard?.front||'';
+  const fb=entry.flashcard?.back||'';
+  const fd=entry.flashcard?.deck||'Daily';
+  $('flashContent').innerHTML=`
+    <div class="fc-qlabel" style="color:var(--green)">Deck: ${fd}</div>
+    <div class="fc-qtext">${ff}</div>
+    <div class="fc-hint" style="color:var(--green);opacity:.6">↳ ${fb}</div>
+    <div class="fc-actions">
+      <button class="fc-btn hi" style="--fc-col:var(--green)" onclick='toast("Ya guardado en Flashcards ✦")'>✦ En Flashcards</button>
     </div>`;
 }
 
@@ -216,6 +255,7 @@ async function generateToday(force){
   // Skeletons
   $('quoteContent').innerHTML='<div class="skeleton sk w90"></div><div class="skeleton sk w70"></div><div class="skeleton sk w50"></div><div class="skeleton sk w35"></div>';
   $('questionContent').innerHTML='<div class="skeleton sk w90"></div><div class="skeleton sk w70"></div><div class="skeleton sk w50"></div>';
+  $('flashContent').innerHTML='<div class="skeleton sk w90"></div><div class="skeleton sk w70"></div><div class="skeleton sk w50"></div>';
 
   const btn=$('refreshBtn'); btn.disabled=true; btn.classList.add('spinning');
 
@@ -241,13 +281,18 @@ Generá el contenido del día. Respondé ÚNICAMENTE con JSON válido, sin markd
     "text": "Una cita poco conocida, que no sea un cliché. Sobre el conocimiento, la lectura, la filosofía, el esfuerzo intelectual o la vida del estudiante. Puede ser en español o inglés. Sin comillas dobles en el texto.",
     "author": "Nombre completo del autor real de esta cita"
   },
-  "question": "Una pregunta de reflexión profunda en español para escribir en el journal hoy. Relacionada con el estudio, la filosofía, la identidad, el crecimiento intelectual o la vida universitaria. Que invite a explorar. No de sí/no."
+  "question": "Una pregunta de reflexión profunda en español para escribir en el journal hoy. Relacionada con el estudio, la filosofía, la identidad, el crecimiento intelectual o la vida universitaria. Que invite a explorar. No de sí/no.",
+  "flashcard": {
+    "front": "Una pregunta de estudio concreta sobre filosofía, historia, literatura clásica o ciencia. Que tenga una respuesta definida. En español o inglés.",
+    "back": "La respuesta correcta y concisa a esa pregunta. Máximo 3 líneas.",
+    "deck": "El tema: Philosophy, Literature, History, o Science"
+  }
 }`;
 
   try {
     const res=await fetch('/api/claude',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:400,messages:[{role:'user',content:prompt}]}) 
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,messages:[{role:'user',content:prompt}]})
     });
     if(!res.ok){
       const err=await res.json().catch(()=>({}));
@@ -256,7 +301,7 @@ Generá el contenido del día. Respondé ÚNICAMENTE con JSON válido, sin markd
     const data=await res.json();
     const raw=data.content[0].text.replace(/```json|```/g,'').trim();
     const entry=JSON.parse(raw);
-    if(!entry.quote?.text||!entry.question) throw new Error('Respuesta con formato inválido');
+    if(!entry.quote?.text||!entry.question||!entry.flashcard?.front) throw new Error('Respuesta con formato inválido');
     cache[key]=entry;
     setCache(cache);
     publishShared(entry);
