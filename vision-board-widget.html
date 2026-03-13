@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -46,12 +47,12 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 /* AREAS GRID */
 .areas-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px;}
 @media(max-width:700px){.areas-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:420px){.areas-grid{grid-template-columns:1fr;}}
 
-.area-card{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:18px;position:relative;overflow:hidden;transition:all .22s;cursor:pointer;animation:cardIn .4s cubic-bezier(.16,1,.3,1) both;}
+.area-card{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:18px;position:relative;overflow:hidden;transition:all .22s;animation:cardIn .4s cubic-bezier(.16,1,.3,1) both;}
 @keyframes cardIn{from{opacity:0;transform:scale(.96)}to{opacity:1;transform:scale(1)}}
 .area-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--ac,var(--accent));transition:opacity .2s;}
 .area-card::after{content:'';position:absolute;top:6px;left:6px;width:7px;height:7px;border-top:1px solid var(--ac,var(--accent));border-left:1px solid var(--ac,var(--accent));opacity:.3;}
-.area-card:hover{border-color:var(--border2);transform:translateY(-2px);box-shadow:0 8px 24px rgba(0,0,0,.3);}
 
 .area-icon{font-size:22px;margin-bottom:10px;}
 .area-name{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:600;color:var(--text);letter-spacing:.04em;margin-bottom:4px;}
@@ -66,15 +67,25 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .ap-fill{height:100%;border-radius:1px;transition:width .7s cubic-bezier(.34,1.1,.64,1);}
 
 /* GOALS LIST */
-.goals-list{display:flex;flex-direction:column;gap:4px;}
+.goals-list{display:flex;flex-direction:column;gap:4px;margin-bottom:8px;}
 .goal-row{display:flex;align-items:center;gap:7px;font-size:11px;color:var(--muted2);letter-spacing:.02em;transition:color .2s;}
 .goal-row.done{color:var(--muted);text-decoration:line-through;opacity:.6;}
-.goal-check{width:12px;height:12px;border-radius:2px;border:1px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s cubic-bezier(.34,1.2,.64,1);}
+.goal-check{width:16px;height:16px;border-radius:2px;border:1px solid var(--muted);flex-shrink:0;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .2s cubic-bezier(.34,1.2,.64,1);}
 .goal-check.done{background:var(--ac,var(--accent));border-color:var(--ac,var(--accent));}
 .goal-check.done::after{content:'';width:6px;height:4px;border-left:1.5px solid #0e0b08;border-bottom:1.5px solid #0e0b08;transform:rotate(-45deg) translateY(-1px);}
 .goal-check:hover{transform:scale(1.15);}
+.goal-del{background:none;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:2px 4px;transition:color .15s;line-height:1;flex-shrink:0;}
+.goal-del:hover{color:var(--red);}
+.goal-text{flex:1;cursor:pointer;padding:2px 0;}
 
-.area-add-goal{background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;transition:color .2s;padding:4px 0;text-align:left;}
+/* INLINE GOAL INPUT */
+.goal-input-row{display:flex;gap:6px;margin-top:6px;}
+.goal-inp{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:2px;padding:8px 10px;color:var(--text);font-family:'Inter',sans-serif;font-size:11px;font-weight:300;outline:none;transition:border-color .2s;}
+.goal-inp:focus{border-color:var(--ac,var(--accent));}
+.goal-inp-btn{background:none;border:1px solid var(--ac,var(--accent));border-radius:2px;padding:8px 12px;color:var(--ac,var(--accent));cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.1em;transition:all .2s;white-space:nowrap;}
+.goal-inp-btn:hover{background:rgba(196,144,79,.1);}
+
+.area-add-goal{background:none;border:none;color:var(--muted);cursor:pointer;font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;text-transform:uppercase;transition:color .2s;padding:4px 0;text-align:left;display:block;width:100%;}
 .area-add-goal:hover{color:var(--accent2);}
 
 /* MANIFESTATION */
@@ -88,7 +99,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .ms-hint{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-top:8px;}
 
 /* WORD OF YEAR */
-.woy{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:22px;text-align:center;margin-bottom:12px;position:relative;overflow:hidden;cursor:pointer;}
+.woy{background:var(--surface);border:1px solid var(--border);border-radius:2px;padding:22px;text-align:center;margin-bottom:12px;position:relative;overflow:hidden;}
 .woy::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(to right,transparent,var(--accent),transparent);}
 .woy-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:.25em;color:var(--muted2);text-transform:uppercase;margin-bottom:10px;}
 .woy-word{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:600;color:var(--accent2);letter-spacing:.08em;text-shadow:0 0 40px rgba(224,180,122,.25);cursor:text;transition:all .2s;}
@@ -105,6 +116,17 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(24px);background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:400;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* MOBILE */
+@media(max-width:560px){
+  body{padding:14px 10px 60px;}
+  .app{padding:0;}
+  .woy-word{font-size:32px;}
+  .save-bar{justify-content:stretch;}
+  .save-btn{width:100%;justify-content:center;}
+  .goal-check{width:20px;height:20px;}
+  .goal-del{font-size:16px;padding:4px 6px;}
+}
 </style>
 </head>
 <body>
@@ -171,12 +193,12 @@ if(!visionData){
     woy:'Growth',
     manif:'',
     areas:{
-      academic:{progress:60,goals:[{text:'Complete all finals',done:false},{text:'Maintain GPA above 8',done:true}]},
-      career:{progress:20,goals:[{text:'Build portfolio',done:false}]},
-      health:{progress:40,goals:[{text:'Exercise 3x/week',done:false},{text:'Sleep 8 hours',done:false}]},
-      creative:{progress:30,goals:[{text:'Write daily',done:false}]},
-      social:{progress:50,goals:[{text:'Quality time with friends',done:true}]},
-      finance:{progress:15,goals:[{text:'Start investing',done:false}]},
+      academic:{progress:0,goals:[]},
+      career:{progress:0,goals:[]},
+      health:{progress:0,goals:[]},
+      creative:{progress:0,goals:[]},
+      social:{progress:0,goals:[]},
+      finance:{progress:0,goals:[]},
     }
   };
   save();
@@ -230,10 +252,15 @@ function renderAreas(){
       <div class="goals-list" id="goals_${a.id}">
         ${goals.map((g,gi)=>`<div class="goal-row${g.done?' done':''}">
           <div class="goal-check${g.done?' done':''}" style="${g.done?`background:${a.col};border-color:${a.col}`:''}" onclick="toggleGoal('${a.id}',${gi})"></div>
-          <span>${g.text}</span>
+          <span class="goal-text" onclick="editGoal('${a.id}',${gi})">${g.text}</span>
+          <button class="goal-del" onclick="deleteGoal('${a.id}',${gi})">✕</button>
         </div>`).join('')}
       </div>
-      <button class="area-add-goal" onclick="addGoal('${a.id}')">+ Add goal</button>
+      <div class="goal-input-row" id="addinput_${a.id}" style="display:none">
+        <input class="goal-inp" id="inp_${a.id}" placeholder="Nueva meta..." onkeydown="if(event.key==='Enter')confirmGoal('${a.id}');if(event.key==='Escape')hideInput('${a.id}')">
+        <button class="goal-inp-btn" onclick="confirmGoal('${a.id}')">Add</button>
+      </div>
+      <button class="area-add-goal" id="addbtn_${a.id}" onclick="showInput('${a.id}')">+ Add goal</button>
     </div>`;
   }).join('');
 }
@@ -244,9 +271,45 @@ function toggleGoal(areaId,gi){
   save();renderAreas();
 }
 
-function addGoal(areaId){
-  const text=prompt('New goal:');
-  if(!text) return;
+function deleteGoal(areaId,gi){
+  if(!visionData.areas[areaId]) return;
+  visionData.areas[areaId].goals.splice(gi,1);
+  save();renderAreas();toast('Goal removed ✦');
+}
+
+function editGoal(areaId,gi){
+  const current=visionData.areas[areaId]?.goals[gi]?.text||'';
+  const row=event.target.closest('.goal-row');
+  const span=row?.querySelector('.goal-text');
+  if(!span) return;
+  const inp=document.createElement('input');
+  inp.className='goal-inp';inp.value=current;inp.style.flex='1';
+  span.replaceWith(inp);inp.focus();inp.select();
+  const finish=()=>{
+    const val=inp.value.trim();
+    if(val) visionData.areas[areaId].goals[gi].text=val;
+    save();renderAreas();if(val) toast('Goal updated ✦');
+  };
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')finish();if(e.key==='Escape'){renderAreas();}});
+  inp.addEventListener('blur',finish);
+}
+
+function showInput(areaId){
+  const row=document.getElementById('addinput_'+areaId);
+  const btn=document.getElementById('addbtn_'+areaId);
+  if(row){row.style.display='flex';btn.style.display='none';}
+  const inp=document.getElementById('inp_'+areaId);
+  if(inp){inp.value='';inp.focus();}
+}
+
+function hideInput(areaId){
+  renderAreas();
+}
+
+function confirmGoal(areaId){
+  const inp=document.getElementById('inp_'+areaId);
+  const text=inp?.value?.trim();
+  if(!text){hideInput(areaId);return;}
   if(!visionData.areas[areaId]) visionData.areas[areaId]={progress:0,goals:[]};
   visionData.areas[areaId].goals.push({text,done:false});
   save();renderAreas();toast('Goal added ✦');
