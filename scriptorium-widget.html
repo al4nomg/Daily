@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -200,7 +201,7 @@ function loadDailyPrompt(){
   if(feed?.prompts?.length){
     // Pick deterministically by day-of-year
     const doy=Math.floor((new Date()-new Date(new Date().getFullYear(),0,0))/(1000*60*60*24));
-    prompt=feed.prompts[doy % feed.prompts.length];
+    prompt=feed.prompts[doy % feed.prompts.length]?.text || feed.prompts[doy % feed.prompts.length] || '';
   } else {
     // Fallback built-in prompts
     const fallbacks=[
