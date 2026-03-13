@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -214,7 +215,7 @@ function addDailyToBoard(){
   if(!_todayQuote) return;
   // Check if already on board
   if(items.some(i=>i.type==='quote'&&i.text===_todayQuote.text)){toast('Ya está en el board');return;}
-  items.unshift({id:'i'+Date.now(),type:'quote',text:_todayQuote.text,author:_todayQuote.author||'',cat:'libros',col:'#e0b47a'});
+  items.unshift({id:'i'+Date.now(),type:'quote',text:_todayQuote.text,author:_todayQuote.author||'',cat:'daily',col:'#e0b47a'});
   save();render();toast('Frase del día agregada ✦');
 }
 
