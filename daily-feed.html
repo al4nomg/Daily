@@ -174,18 +174,20 @@ function publishShared(entry){
   }
   // Push flashcard to fc-data (Flashcards widget localStorage)
   if(entry.flashcard?.front){
-    let fcData=JSON.parse(localStorage.getItem('fc-data')||'{"decks":{},"cards":[]}');
+    let fcData=JSON.parse(localStorage.getItem('fc-data')||'{"decks":[],"cards":[]}');
     const deck='Daily';
-    if(!fcData.decks[deck]) fcData.decks[deck]={name:deck,color:'#7aaa88'};
+    if(!fcData.decks.some(d=>d.name===deck)){
+      fcData.decks.push({id:'daily',name:deck,color:'#7aaa88'});
+    }
     const today=new Date().toISOString().slice(0,10);
     // Remove old daily card and add today's
     fcData.cards=fcData.cards.filter(c=>!(c.deck===deck));
     fcData.cards.push({
       id:'daily-'+today,
       deck,
-      front:entry.flashcard.front,
-      back:entry.flashcard.back,
-      level:0,due:today,reps:0
+      q:entry.flashcard.front,
+      a:entry.flashcard.back,
+      level:0,nextReview:Date.now(),reps:0
     });
     localStorage.setItem('fc-data',JSON.stringify(fcData));
   }
