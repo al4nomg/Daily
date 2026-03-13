@@ -272,51 +272,56 @@ function renderMap(){
   const dip=new Date(y,m,0).getDate();
   const tk=dKey(new Date());
 
-  // Clear and rebuild with DOM nodes (no onclick inline)
-  const grid=$('mapGrid');
-  grid.innerHTML='';
-
-  DAYS_S.forEach(d=>{
-    const el=document.createElement('div');
-    el.className='month-day-head';
-    el.textContent=d;
-    grid.appendChild(el);
-  });
-
-  for(let i=first-1;i>=0;i--){
-    const el=document.createElement('div');
-    el.className='month-cell other';
-    el.textContent=dip-i;
-    grid.appendChild(el);
-  }
-
+  let html=DAYS_S.map(d=>`<div class="month-day-head">${d}</div>`).join('');
+  for(let i=first-1;i>=0;i--) html+=`<div class="month-cell other">${dip-i}</div>`;
   for(let d=1;d<=dim;d++){
     const k=`${y}-${pad(m+1)}-${pad(d)}`;
     const entry=entries[k];
     const mood=entry?MOODS.find(mm=>mm.id===entry.mood):null;
     const bg=mood?mood.col+'44':'transparent';
     const isT=k===tk;
-    const el=document.createElement('div');
-    el.className='month-cell'+(entry?' has-entry':'')+(isT?' today':'');
-    el.style.background=bg;
-    el.style.cursor='pointer';
-    el.title=entry?entry.mood+' · energy '+entry.energy:'No entry';
-    el.textContent=d;
-    // Store data for click
-    el.dataset.y=y; el.dataset.m=m; el.dataset.d=d;
-    el.addEventListener('click', function(){
-      const ny=parseInt(this.dataset.y);
-      const nm=parseInt(this.dataset.m);
-      const nd=parseInt(this.dataset.d);
-      curDate=new Date(ny,nm,nd);
+    html+=`<div class="month-cell${entry?' has-entry':''}${isT?' today':''}" style="background:${bg}" data-y="${y}" data-m="${m}" data-d="${d}">${d}</div>`;
+  }
+  $('mapGrid').innerHTML=html;
+}
+
+// Delegated click on calendar grid
+document.addEventListener('DOMContentLoaded', function(){
+  $('mapGrid').addEventListener('click', function(e){
+    const cell=e.target.closest('.month-cell');
+    if(!cell||cell.classList.contains('other')) return;
+    const y=parseInt(cell.dataset.y);
+    const m=parseInt(cell.dataset.m);
+    const d=parseInt(cell.dataset.d);
+    if(isNaN(y)||isNaN(m)||isNaN(d)) return;
+    curDate=new Date(y,m,d);
+    curDate.setHours(0,0,0,0);
+    loadDay();
+    window.scrollTo({top:0,behavior:'smooth'});
+  });
+});
+
+loadDay();
+
+// Fallback: attach after load in case DOMContentLoaded already fired
+window.addEventListener('load', function(){
+  const grid=$('mapGrid');
+  if(grid && !grid._delegated){
+    grid._delegated=true;
+    grid.addEventListener('click', function(e){
+      const cell=e.target.closest('.month-cell');
+      if(!cell||cell.classList.contains('other')) return;
+      const y=parseInt(cell.dataset.y);
+      const m=parseInt(cell.dataset.m);
+      const d=parseInt(cell.dataset.d);
+      if(isNaN(y)||isNaN(m)||isNaN(d)) return;
+      curDate=new Date(y,m,d);
       curDate.setHours(0,0,0,0);
       loadDay();
       window.scrollTo({top:0,behavior:'smooth'});
     });
-    grid.appendChild(el);
   }
-}
-loadDay();
+});
 </script>
 </body>
 </html>
