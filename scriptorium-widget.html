@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -117,6 +116,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
 .toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(24px);background:var(--surface2);border:1px solid var(--border2);border-left:3px solid var(--accent);padding:10px 20px;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--text2);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);pointer-events:none;z-index:400;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
+<script src="/cloud-sync.js"></script>
 </head>
 <body>
 <div class="orb o1"></div><div class="orb o2"></div>
@@ -187,7 +187,7 @@ if(!openSections) openSections=TYPES.map(t=>t.id);
 
 let activeId=null, autoSaveTimer=null;
 
-function save(){localStorage.setItem('scrip-entries',JSON.stringify(entries));}
+function save(){localStorage.setItem('scrip-entries',JSON.stringify(entries));if(typeof CloudStorage!=='undefined')CloudStorage.set('scrip-entries',entries);}
 function saveOpenState(){localStorage.setItem('scrip-open',JSON.stringify(openSections));}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2000);}
 

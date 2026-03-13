@@ -489,7 +489,28 @@
   @keyframes checkPop { 0%{transform:scale(0.8)} 60%{transform:scale(1.2)} 100%{transform:scale(1)} }
   @keyframes dotPulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(0.7)} }
   @keyframes overdueShake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-2px)} 75%{transform:translateX(2px)} }
+
+  /* ── MOBILE ── */
+  @media (max-width: 600px) {
+    body { padding: 16px 12px; }
+    .widget { width: 100%; }
+    .header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .header-stats { gap: 16px; }
+    .add-form { flex-wrap: wrap; }
+    .date-input { min-width: 0; flex: 1; }
+    .btn-add { width: 100%; justify-content: center; padding: 13px; }
+    .filter-btn { font-size: 8px; letter-spacing: 0.1em; padding: 9px 4px; }
+    /* On mobile: hide priority & due date columns, show only checkbox + title + delete */
+    .table-head { grid-template-columns: 32px 1fr 38px; }
+    .table-head .col-head:nth-child(3),
+    .table-head .col-head:nth-child(4) { display: none; }
+    .task-row { grid-template-columns: 32px 1fr 38px; }
+    .task-row > *:nth-child(3),
+    .task-row > *:nth-child(4) { display: none; }
+    .task-row { padding: 14px 12px; }
+  }
 </style>
+<script src="/cloud-sync.js"></script>
 </head>
 <body>
 
@@ -565,7 +586,7 @@
   let currentFilter = 'all';
 
   const $ = id => document.getElementById(id);
-  function save() { localStorage.setItem('da-tasks2', JSON.stringify(tasks)); }
+  function save() { localStorage.setItem('da-tasks2', JSON.stringify(tasks)); if(typeof CloudStorage!=='undefined')CloudStorage.set('da-tasks2',tasks); }
 
   function showToast(msg) {
     const t = $('toast');
@@ -586,7 +607,7 @@
     }
     tasks.unshift({ id: Date.now(), name, status: 'pending', due: dateInput.value || null, done: false });
     input.value = ''; dateInput.value = '';
-    save(); render();
+    save(); if(typeof CloudStorage!=="undefined"){CloudStorage.get("da-tasks2").then(d=>{if(d)tasks=d;render();});}else{try{tasks=JSON.parse(localStorage.getItem("da-tasks2")||"[]")}catch(e){}render();}
     showToast('Task added');
   }
 

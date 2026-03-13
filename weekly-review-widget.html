@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -114,6 +113,7 @@ body::after{content:'';position:fixed;inset:0;background:repeating-linear-gradie
   .header{flex-direction:column;align-items:flex-start;gap:10px;}
 }
 </style>
+<script src="/cloud-sync.js"></script>
 </head>
 <body>
 <div class="orb o1"></div><div class="orb o2"></div>
@@ -196,13 +196,13 @@ const QUESTIONS=[
   'What would I do differently?',
 ];
 
-let reviews=JSON.parse(localStorage.getItem('weekly-rev')||'{}');
+let reviews={};
 let weekOffset=0;
 let currentRatings={};
 let currentAnswers={};
 let intentions=[];
 
-function save(){localStorage.setItem('weekly-rev',JSON.stringify(reviews));}
+function save(){localStorage.setItem('weekly-rev',JSON.stringify(reviews));if(typeof CloudStorage!=='undefined')CloudStorage.set('weekly-rev',reviews);}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2200);}
 
 // ── CONFIRM MODAL ──
@@ -237,7 +237,7 @@ function getWeekRange(){
   const we=new Date(ws); we.setDate(ws.getDate()+6);
   return ws.getDate()+' '+MONTHS[ws.getMonth()]+' — '+we.getDate()+' '+MONTHS[we.getMonth()];
 }
-function weekNav(d){ weekOffset+=d; loadWeek(); }
+function weekNav(d){ weekOffset+=d; if(typeof CloudStorage!=="undefined"){CloudStorage.get("weekly-rev").then(d=>{if(d)reviews=d;loadWeek();});}else{try{reviews=JSON.parse(localStorage.getItem("weekly-rev")||"{}")}catch(e){}loadWeek();} }
 
 function loadWeek(){
   const k=getWeekKey();

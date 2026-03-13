@@ -164,6 +164,7 @@ body::after{content:'';position:fixed;inset:0;
   pointer-events:none;z-index:400;white-space:nowrap;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
+<script src="/cloud-sync.js"></script>
 </head>
 <body>
 <div class="orb o1"></div><div class="orb o2"></div>
@@ -270,7 +271,7 @@ let studyIdx = 0;
 let flipped = false;
 let showAddForm = false;
 
-function save(){localStorage.setItem('fc-data',JSON.stringify(data));}
+function save(){localStorage.setItem('fc-data',JSON.stringify(data));if(typeof CloudStorage!=='undefined')CloudStorage.set('fc-data',data);}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2000);}
 
 function getCards(deck){

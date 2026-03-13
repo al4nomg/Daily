@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -113,6 +112,7 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:14px;heigh
   .energy-label{font-size:8px;min-width:44px;}
 }
 </style>
+<script src="/cloud-sync.js"></script>
 </head>
 <body>
 <div class="orb o1"></div><div class="orb o2"></div>
@@ -185,12 +185,12 @@ const $=id=>document.getElementById(id);
 const pad=n=>String(n).padStart(2,'0');
 const dKey=(d)=>`${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
 
-let entries=JSON.parse(localStorage.getItem('mood-entries')||'{}');
+let entries={};(async()=>{if(typeof CloudStorage!=='undefined'){const d=await CloudStorage.get('mood-entries');if(d)entries=d;}else{try{entries=JSON.parse(localStorage.getItem('mood-entries')||'{}')}catch(e){}}loadDay();})();
 let curDate=new Date(); curDate.setHours(0,0,0,0);
 let selMood=null;
 let lastLoadedKey=null;
 
-function save(){localStorage.setItem('mood-entries',JSON.stringify(entries));}
+function save(){localStorage.setItem('mood-entries',JSON.stringify(entries));if(typeof CloudStorage!=='undefined')CloudStorage.set('mood-entries',entries);}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(t._);t._=setTimeout(()=>t.classList.remove('show'),2000);}
 
 function goToday(){curDate=new Date();curDate.setHours(0,0,0,0);loadDay();}
